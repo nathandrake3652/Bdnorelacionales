@@ -1,7 +1,8 @@
 import React,{SyntheticEvent, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useLogin } from '../hooks/useLogin';
+import { useLogin, useAnonLogin } from '../hooks/useLogin';
+
 
 export const Login = () => {
   const [username,setUser] = useState('');
@@ -9,6 +10,8 @@ export const Login = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const {setToken} = useAuth();
   const navigate = useNavigate();
+
+  
 
   const login = useLogin((token) => {
     
@@ -20,8 +23,19 @@ export const Login = () => {
   (error)=>{
     setErrorMsg(error);
   }
+  );
 
-);
+  const loginAnon = useAnonLogin((token) => {
+    
+    setToken(token);
+    console.log(setToken(token));
+    navigate('/Home');
+    
+  },
+  (error)=>{
+    setErrorMsg(error);
+  }
+  );
 
   const submit = (e: SyntheticEvent) => 
   {
@@ -29,6 +43,11 @@ export const Login = () => {
     setErrorMsg('');
     login.mutate({username,password});
       
+  };
+
+  const handleAnonymous = () => {
+    setErrorMsg('');
+    loginAnon.mutate({ type: 'anon' });
   };
 
 
@@ -50,10 +69,26 @@ export const Login = () => {
               {login.isPending? 'iniciando sesion...': 'Login'}
             </button>
         </form>
-        {login.isError && <p>usuario o contraseña incorrectas </p>}
-        {errorMsg && <p>{errorMsg}</p>}
-        <p>Si no tienes cuenta, registrate <a href="/Register">aquí</a></p>
-        <p>¿Olvidaste tu contraseña? <a href="/ForgotPassword">Recupera tu contraseña</a></p>
+
+      <div className="separator">
+        <span>o</span>
+      </div>
+      
+      <button 
+        onClick={handleAnonymous} 
+        disabled={loginAnon.isPending}
+        className="boton-anonimo"
+      >
+        {loginAnon.isPending ? 'Creando sesión...' : 'Continuar como Anónimo'}
+      </button>
+  
+      {login.isError && <p className="error-message">Usuario o contraseña incorrectos</p>}
+      {loginAnon.isError && <p className="error-message">{errorMsg}</p>}
+      
+      <div className="links-register">
+        <p>¿No tienes cuenta? <a href="/Register">Regístrate aquí</a></p>
+        <p>¿Olvidaste tu contraseña? <a href="/ForgotPassword">Recupérala aquí</a></p>
+      </div>
         
     </div>
   );

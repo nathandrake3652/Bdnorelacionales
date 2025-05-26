@@ -7,6 +7,9 @@ interface Logindata {
     password: string;
 }
 
+interface AnonLoginData {
+  type: string;
+}
 
 
 export function useLogin(onSuccess: (token: string)=> void, onFail:(error:string)=> void) {
@@ -26,4 +29,21 @@ export function useLogin(onSuccess: (token: string)=> void, onFail:(error:string
         }
 
     });
+}
+
+export function useAnonLogin(onSuccess: (token: string) => void, onFail: (error: string) => void) {
+  return useMutation<string, AxiosError, AnonLoginData>({
+    mutationFn: async ({type}: AnonLoginData): Promise<string> => {
+      const respuesta = await api.post('api/v1/auth/anonimo', {type});
+      return respuesta.data;
+    },
+    onSuccess: (data) => {
+      console.log('Sesión anónima creada', data);
+      onSuccess(data);
+    },
+    onError: (error) => {
+      const mensaje = (error.response?.data as { message?: string })?.message || 'Error al crear sesión anónima';
+      onFail(mensaje);
+    }
+  });
 }
