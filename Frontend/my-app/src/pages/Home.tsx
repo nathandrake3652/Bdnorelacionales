@@ -37,9 +37,22 @@ export const Home = () => {
     }
 
     return (
-    <div> 
-        <h2> Bienvenido: {user?.username}, tu correo es: {user?.email} </h2>
-        <button onClick={logout}>Cerrar la sesion 🤑</button>
+    <div className="Home">
+      {user?.type === 'anon' ? (
+        <>
+          <h2>Estás navegando como usuario anónimo</h2>
+          <p>Tu sesión es temporal y se perderá al cerrar el navegador</p>
+        </>
+      ) : (
+        <>
+          <h2>Bienvenido, {user?.username}</h2>
+          <p>Correo electrónico: {user?.email}</p>
+        </>
+      )}
+      
+      <button onClick={logout} className="Botón-logout">
+        Cerrar sesión
+      </button>
     </div>
     );
     
