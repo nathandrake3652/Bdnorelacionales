@@ -3,7 +3,7 @@ import api from '../api/axios';
 import { AxiosError } from 'axios';
 
 interface Logindata {
-    username: string;
+    correo: string;
     password: string;
 }
 
@@ -14,8 +14,8 @@ interface AnonLoginData {
 
 export function useLogin(onSuccess: (token: string)=> void, onFail:(error:string)=> void) {
     return useMutation<string,AxiosError,Logindata>({
-        mutationFn: async ({username,password}: Logindata): Promise<string> => {
-            const respuesta = await api.post('api/v1/auth/Login', {username,password});
+        mutationFn: async ({correo,password}: Logindata): Promise<string> => {
+            const respuesta = await api.post('api/v1/auth/Login', {correo,password});
             console.log(respuesta.data);
             return respuesta.data;
         },
