@@ -28,7 +28,7 @@ export const Register = () => { //Hooks
     <div>
         <h1>Registro</h1>
         <form onSubmit={enviar}>
-            <label>Ingrese su Rut: </label>
+            <label>Ingrese su nombre de usuario: </label>
             <input type = "text" name = "username" placeholder = 'Ingrese su nombre de usuario...' required value={username}
               onChange={e => setUser(e.target.value)}
             />

@@ -5,7 +5,7 @@ import { useLogin, useAnonLogin } from '../hooks/useLogin';
 
 
 export const Login = () => {
-  const [username,setUser] = useState('');
+  const [correo,setCorreo] = useState('');
   const [password,setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const {setToken} = useAuth();
@@ -41,7 +41,7 @@ export const Login = () => {
   {
     e.preventDefault();
     setErrorMsg('');
-    login.mutate({username,password});
+    login.mutate({correo,password});
       
   };
 
@@ -55,9 +55,9 @@ export const Login = () => {
     <div>
         <h1>Login</h1>
         <form onSubmit={submit}>
-            <label>Rut: </label>
-            <input type="text" name="username" id = "username" required value = {username}
-              onChange = {e => setUser(e.target.value)}
+            <label>Correo: </label>
+            <input type="text" name="username" id = "username" required value = {correo}
+              onChange = {e => setCorreo(e.target.value)}
                    placeholder = "Ingrese porfavor su nombre de usuario."
             />
             <label>Contraseña: </label>
