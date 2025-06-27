@@ -24,6 +24,10 @@ export const Home = () => {
     const { data: publicaciones, isLoading: cargandoPublicaciones } = usePublicaciones(filtro);
     const { mutate: crearPublicacion } = useCrearPublicacion();
 
+    //Votaciones
+    const { mutate: votarPublicacion } = useVotarPublicacion();
+    const [userVotes, setUserVotes] = useState<Record<number, number>>({});
+
     if (!token) {
         navigate('/Login');
         return null;
@@ -73,14 +77,46 @@ export const Home = () => {
             title: titulo,
             content: contenido,
             authorId: user.id, 
-            tags: tagsArray,
-            score: 0 
+            tags: tagsArray
         });
 
         setTitulo("");
         setContenido("");
         setTags("");
         setMostrarModal(false);
+    };
+
+    const handleVote = (publicacionId: number, newVoteValue: number) => {
+        if (user.type === 'anonimo') return;
+        
+        const currentVote = userVotes[publicacionId] || 0;
+        let scoreChange = 0;
+        
+        // Lógica para determinar el cambio de puntuación
+        if (currentVote === newVoteValue) {
+            // Quitar el voto si ya está seleccionado
+            scoreChange = -newVoteValue;
+        } else if (currentVote === 0) {
+            // Añadir nuevo voto
+            scoreChange = newVoteValue;
+        } else {
+            // Cambiar de voto positivo a negativo o viceversa
+            scoreChange = newVoteValue - currentVote;
+        }
+        
+        // Actualizar el estado local
+        const newVote = scoreChange === -newVoteValue ? 0 : newVoteValue;
+        setUserVotes(prev => ({
+            ...prev,
+            [publicacionId]: newVote
+        }));
+        
+        // Enviar el voto al backend
+        votarPublicacion({
+            idVotador: user.id,
+            score: scoreChange,
+            idPublicacion: publicacionId
+        });
     };
 
     return (
@@ -189,18 +225,68 @@ export const Home = () => {
 
             
       <div className="lista-publicaciones">
-          {publicaciones.map((publicacion: any) => (
-              <div key={publicacion.id} className="publicacion">
-                  <p>Puntuación: {publicacion.score}</p>
-                  <h3>{publicacion.author}</h3>
-                  <h3>{publicacion.title}</h3>
-                  <p>{publicacion.content}</p>
-              </div>
-          ))}
-      </div>
-      
-
-
+                {publicaciones.map((publicacion: any) => (
+                    <div key={publicacion.id} className="publicacion">
+                        {user.type !== 'anonimo' && (
+                            <div className="voting-buttons" style={{ 
+                                display: 'flex', 
+                                alignItems: 'center',
+                                gap: '5px', 
+                                marginBottom: '10px' 
+                            }}>
+                                <button
+                                    onClick={() => handleVote(publicacion.id, 1)}
+                                    style={{
+                                        backgroundColor: userVotes[publicacion.id] === 1 ? '#4CAF50' : '#e0e0e0',
+                                        color: userVotes[publicacion.id] === 1 ? 'white' : 'black',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        padding: '5px 10px',
+                                        cursor: 'pointer',
+                                        fontWeight: 'bold'
+                                    }}
+                                    disabled={cargandoPublicaciones}
+                                >
+                                    ↑
+                                </button>
+                                
+                                <span style={{ 
+                                    minWidth: '20px', 
+                                    textAlign: 'center',
+                                    fontWeight: 'bold'
+                                }}>
+                                    {publicacion.score}
+                                </span>
+                                
+                                <button
+                                    onClick={() => handleVote(publicacion.id, -1)}
+                                    style={{
+                                        backgroundColor: userVotes[publicacion.id] === -1 ? '#f44336' : '#e0e0e0',
+                                        color: userVotes[publicacion.id] === -1 ? 'white' : 'black',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        padding: '5px 10px',
+                                        cursor: 'pointer',
+                                        fontWeight: 'bold'
+                                    }}
+                                    disabled={cargandoPublicaciones}
+                                >
+                                    ↓
+                                </button>
+                            </div>
+                        )}
+                        
+                        {user.type === 'anonimo' && (
+                            <p>Puntuación: {publicacion.score}</p>
+                        )}
+                        
+                        <h3>{publicacion.author}</h3>
+                        <h3>{publicacion.title}</h3>
+                        <p>{publicacion.content}</p>
+                    </div>
+                ))}
+            </div>
+            
       {user.type === 'anonimo' ? (
         <>
           <h2>Estás navegando como usuario anónimo</h2>

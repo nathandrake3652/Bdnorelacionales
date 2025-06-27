@@ -6,14 +6,13 @@ interface PublicacionData{
     content: string;
     authorId: number;
     tags: string[];
-    score: number;
 }
 
-export function useCrearPublicacion(){
+export function useCrearPublicacion(){ //listo
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async ({title, content,authorId, tags, score}:PublicacionData)  => {
-            const respuesta = await api.post('api/v1/publicaciones',{title, content, authorId, tags, score});
+        mutationFn: async ({title, content,authorId, tags}:PublicacionData)  => {
+            const respuesta = await api.post('api/v1/publicaciones',{title, content, authorId, tags});
             return respuesta.data
         },
         onSuccess: () => {
@@ -22,7 +21,7 @@ export function useCrearPublicacion(){
     });
 }
 
-export function useVotarPublicacion(){
+export function useVotarPublicacion(){ //listo
     const clienteQuery = useQueryClient();
     return useMutation({
         mutationFn: async (Rate:{idVotador: number, score: number, idPublicacion: number})  => {
@@ -31,6 +30,7 @@ export function useVotarPublicacion(){
         },
         onSuccess: () => {
             clienteQuery.invalidateQueries({queryKey:['publicaciones']});
+            clienteQuery.invalidateQueries({queryKey:['publicacionesEtiqueta']});
         }
     });
 }
@@ -48,7 +48,7 @@ export function useDarPremio(){
     });
 }
 
-export function usePublicaciones(Datos:{filtro: string}) {
+export function usePublicaciones(Datos:{filtro: string}) { //listo
     return useQuery({
         queryKey: ['publicaciones', Datos],
         queryFn: async (Datos) => {
@@ -60,7 +60,7 @@ export function usePublicaciones(Datos:{filtro: string}) {
 
 export function usePublicacionesPorEtiqueta(Datos:{etiqueta: string, filtro: string}) {
     return useQuery({
-        queryKey: ['publicaciones', Datos],
+        queryKey: ['publicacionesEtiqueta', Datos],
         queryFn: async (Datos) => {
             const respuesta = await api.get('api/v1/publicaciones', Datos);
             return respuesta.data;
