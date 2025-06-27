@@ -25,7 +25,7 @@ export function useCrearPublicacion(){
 export function useVotarPublicacion(){
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (Rate:{score: number, idPublicacion: number})  => {
+        mutationFn: async (Rate:{idVotador: number, score: number, idPublicacion: number})  => {
             const respuesta = await api.patch('api/v1/publicaciones',Rate);
             return respuesta.data
         },
@@ -38,7 +38,7 @@ export function useVotarPublicacion(){
 export function useDarPremio(){
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (premioData:{idPublicacion: number, idPremio: number})  => {
+        mutationFn: async (premioData:{idPremiador: number, idPublicacion: number, idPremio: number})  => {
             const respuesta = await api.patch('api/v1/publicaciones', premioData);
             return respuesta.data
         },
@@ -48,11 +48,11 @@ export function useDarPremio(){
     });
 }
 
-export function usePublicaciones() {
+export function usePublicaciones(Datos:{filtro: string}) {
     return useQuery({
-        queryKey: ['publicaciones'],
-        queryFn: async () => {
-            const respuesta = await api.get('api/v1/publicaciones');
+        queryKey: ['publicaciones', Datos],
+        queryFn: async (Datos) => {
+            const respuesta = await api.get('api/v1/publicaciones', Datos);
             return respuesta.data;
         }
     });
@@ -67,4 +67,3 @@ export function usePublicacionesPorEtiqueta(Datos:{etiqueta: string, filtro: str
         }
     });
 }
-

@@ -11,7 +11,7 @@ interface ComentarioData{
 export function useCrearComentario(){
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async ({content, score,authorId, publicacionId}:ComentarioData)  => {
+        mutationFn: async ({content, score, authorId, publicacionId}:ComentarioData)  => {
             const respuesta = await api.post('api/v1/comentario',{content, score, authorId, publicacionId});
             return respuesta.data
         },
@@ -24,7 +24,7 @@ export function useCrearComentario(){
 export function useVotarComentario(){
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (Rate:{score: number, idComentario: number})  => {
+        mutationFn: async (Rate:{idVotador: number, score: number, idComentario: number})  => {
             const respuesta = await api.patch('api/v1/comentario',Rate);
             return respuesta.data
         },

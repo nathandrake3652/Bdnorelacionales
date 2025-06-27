@@ -5,7 +5,8 @@ import { useLogin, useAnonLogin } from '../hooks/useLogin';
 
 
 export const Login = () => {
-  const [correo,setCorreo] = useState('');
+
+  const [correo, setCorreo] = useState('');
   const [password,setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const {setToken} = useAuth();
@@ -58,12 +59,12 @@ export const Login = () => {
             <label>Correo: </label>
             <input type="text" name="username" id = "username" required value = {correo}
               onChange = {e => setCorreo(e.target.value)}
-                   placeholder = "Ingrese porfavor su nombre de usuario."
+                   placeholder = "Ingrese su nombre de usuario."
             />
             <label>Contraseña: </label>
             <input type="password" name="password" required value = {password}
               onChange = {e => setPassword(e.target.value)}
-                   placeholder = "Ingrese porfavor su contraseña."
+                   placeholder = "Ingrese su contraseña."
             />
             <button type="submit" value="Submit" disabled={login.isPending}>
               {login.isPending? 'iniciando sesion...': 'Login'}
