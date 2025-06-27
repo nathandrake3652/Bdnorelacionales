@@ -85,6 +85,93 @@ export const Home = () => {
 
     return (
     <div className="Home">
+        {user.type !== 'anonimo' && (
+            <button 
+                onClick={() => setMostrarModal(true)}
+                style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    padding: '10px 15px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                }}
+            >
+                Crear Publicación
+            </button>
+        )}
+            
+        {mostrarModal && (
+            <div style={{
+                position: 'fixed',
+                top: '0',
+                left: '0',
+                width: '100%',
+                height: '100%',
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 1000
+            }}>
+                <div style={{
+                    backgroundColor: 'white',
+                    padding: '20px',
+                    borderRadius: '8px',
+                    width: '80%',
+                    maxWidth: '500px'
+                }}>
+                    <h2>Nueva Publicación</h2>
+                        
+                    <div style={{ marginBottom: '15px' }}>
+                        <label>Título:</label>
+                        <input
+                            type="text"
+                            value={titulo}
+                            onChange={(e) => setTitulo(e.target.value)}
+                            style={{ width: '100%', padding: '8px' }}
+                        />
+                    </div>
+                        
+                    <div style={{ marginBottom: '15px' }}>
+                        <label>Contenido:</label>
+                        <textarea
+                            value={contenido}
+                            onChange={(e) => setContenido(e.target.value)}
+                            style={{ width: '100%', padding: '8px', minHeight: '100px' }}
+                        />
+                    </div>
+                        
+                    <div style={{ marginBottom: '15px' }}>
+                        <label>Tags (separados por espacios, ej: #tag1 #tag2):</label>
+                        <input
+                            type="text"
+                            value={tags}
+                            onChange={(e) => setTags(e.target.value)}
+                            style={{ width: '100%', padding: '8px' }}
+                        />
+                    </div>
+                        
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                        <button 
+                            onClick={() => setMostrarModal(false)}
+                            style={{ padding: '8px 16px', backgroundColor: '#f44336', color: 'white' }}
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            onClick={handleCrearPublicacion}
+                            style={{ padding: '8px 16px', backgroundColor: '#4CAF50', color: 'white' }}
+                        >
+                            Publicar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
 
       <div className="filtro-publicaciones">
         <label htmlFor="filtro-publicaciones">Filtrar publicaciones:</label>
