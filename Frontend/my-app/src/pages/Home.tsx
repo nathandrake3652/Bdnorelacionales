@@ -92,26 +92,26 @@ export const Home = () => {
         const currentVote = userVotes[publicacionId] || 0;
         let scoreChange = 0;
         
-        // Lógica para determinar el cambio de puntuación
+        
         if (currentVote === newVoteValue) {
-            // Quitar el voto si ya está seleccionado
+ 
             scoreChange = -newVoteValue;
         } else if (currentVote === 0) {
-            // Añadir nuevo voto
+            
             scoreChange = newVoteValue;
         } else {
-            // Cambiar de voto positivo a negativo o viceversa
+            
             scoreChange = newVoteValue - currentVote;
         }
         
-        // Actualizar el estado local
+        
         const newVote = scoreChange === -newVoteValue ? 0 : newVoteValue;
         setUserVotes(prev => ({
             ...prev,
             [publicacionId]: newVote
         }));
         
-        // Enviar el voto al backend
+        
         votarPublicacion({
             idVotador: user.id,
             score: scoreChange,
@@ -121,6 +121,16 @@ export const Home = () => {
 
     return (
     <div className="Home">
+      {user.type !== 'anonimo' && (
+      <>
+        <h2>Bienvenido, {user.username}</h2>
+          <button onClick={()=> navigate('/Notificaciones')}>Notificaciones</button>
+          
+        <button onClick={logout} className="Botón-logout">
+        Cerrar sesión
+        </button>
+      
+      </>)}
         {user.type !== 'anonimo' && (
             <button 
                 onClick={() => setMostrarModal(true)}
@@ -286,25 +296,6 @@ export const Home = () => {
                     </div>
                 ))}
             </div>
-            
-      {user.type === 'anonimo' ? (
-        <>
-          <h2>Estás navegando como usuario anónimo</h2>
-          <p>Tu sesión es temporal y se perderá al cerrar el navegador</p>
-
-        </>
-      ) : (
-        <>
-          <h2>Bienvenido, {user.username}</h2>
-          <button onClick={()=> navigate('/Notificaciones')}>Notificaciones</button>
-
-          
-        </>
-      )}
-      
-      <button onClick={logout} className="Botón-logout">
-        Cerrar sesión
-      </button>
     </div>
     );
     
