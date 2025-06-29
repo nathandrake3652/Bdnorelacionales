@@ -1,69 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUserProfile } from '../hooks/useUserProfile';
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { usePublicaciones, usePublicacionesPorEtiqueta, useCrearPublicacion, useVotarPublicacion, useDarPremio } from '../hooks/usePublicaciones';
-import { useCrearComentario, useVotarComentario, useComentarios } from '../hooks/useComentarios';
+import { useEtiquetas } from '../hooks/useTags';
+import './Home.css';
+import { usePremios } from '../hooks/usePremios';
 
 export const Home = () => {
-    console.log("Home");
-    const {token, setToken} = useAuth();
+    const { token, setToken } = useAuth();
     const navigate = useNavigate();
-    const { data: user, isLoading: cargauser, isError} = useUserProfile();
+    const { data: user, isLoading: cargauser, isError } = useUserProfile();
     
     const [filtro, setFiltro] = useState({
         filtro: "Sin filtro" 
     });
 
-    //Pop up para hacer publicaciones.
+    //estados para premios
+    const [mostrarPremiosModal, setMostrarPremiosModal] = useState(false);
+    const [publicacionSeleccionada, setPublicacionSeleccionada] = useState<number | null>(null);
+
+    //Crear publicacion
     const [mostrarModal, setMostrarModal] = useState(false);
     const [titulo, setTitulo] = useState("");
     const [contenido, setContenido] = useState("");
     const [tags, setTags] = useState("");
 
-    const { data: publicaciones, isLoading: cargandoPublicaciones } = usePublicaciones(filtro);
+    // Busqueda con etiquetas
+    const [busquedaEtiqueta, setBusquedaEtiqueta] = useState("");
+    const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState<string | null>(null);
+    const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+    
+    //hooks
+    const { data: publicaciones, isLoading: cargandoPublicaciones } = 
+        etiquetaSeleccionada 
+            ? usePublicacionesPorEtiqueta({ etiqueta: etiquetaSeleccionada, filtro: filtro.filtro })
+            : usePublicaciones(filtro);
+    
+    const { data: etiquetas } = useEtiquetas();
     const { mutate: crearPublicacion } = useCrearPublicacion();
-
-    //Votaciones
     const { mutate: votarPublicacion } = useVotarPublicacion();
+    const { data: premios } = usePremios();
+    const { mutate: darPremio } = useDarPremio();
+    
+    // Estado que maneja votaciones
     const [userVotes, setUserVotes] = useState<Record<number, number>>({});
 
-    if (!token) {
-        navigate('/Login');
-        return null;
-    }
+    // Filtrar etiquetas según la búsqueda
+    const etiquetasFiltradas = etiquetas?.filter((etiqueta: any) =>
+    etiqueta.nombre?.toLowerCase().includes(busquedaEtiqueta.toLowerCase())
+    ) || [];
 
-    if(!token)
-    {
-        
-        navigate('/Login');
-        return null;
+    useEffect(() => {
+        if (!token) {
+            navigate('/Login');
+        }
+    }, [token, navigate]);
+
+    if (cargauser || cargandoPublicaciones) {
+        return <div>Cargando...</div>;
     }
     
-    const logout = () => {
-        setToken(null);
-        sessionStorage.removeItem('token');
-        navigate('/Login');
-    }
-
-
-    if(cargauser || cargandoPublicaciones)
-    {
-        return <div> Cargando... </div>;
-    }
-    
-    if(isError)
-    {
+    if (isError) {
         setToken(null);
         navigate('/login');
         return null;
     }
+
+    const logout = () => {
+        setToken(null);
+        sessionStorage.removeItem('token');
+        navigate('/Login');
+    };
 
     const handleFiltroChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setFiltro({
             filtro: e.target.value
         });
     };
+
+
 
     const handleCrearPublicacion = () => {
         if (!titulo || !contenido) {
@@ -92,25 +108,19 @@ export const Home = () => {
         const currentVote = userVotes[publicacionId] || 0;
         let scoreChange = 0;
         
-        
         if (currentVote === newVoteValue) {
- 
             scoreChange = -newVoteValue;
         } else if (currentVote === 0) {
-            
             scoreChange = newVoteValue;
         } else {
-            
             scoreChange = newVoteValue - currentVote;
         }
-        
         
         const newVote = scoreChange === -newVoteValue ? 0 : newVoteValue;
         setUserVotes(prev => ({
             ...prev,
             [publicacionId]: newVote
         }));
-        
         
         votarPublicacion({
             idVotador: user.id,
@@ -119,186 +129,294 @@ export const Home = () => {
         });
     };
 
+    const handleSeleccionarPremio = (idPremio: number) => {
+        if (!publicacionSeleccionada || !user) return;
+        
+        darPremio({
+            idPremiador: user.id,
+            idPublicacion: publicacionSeleccionada,
+            idPremio: idPremio
+        });
+        
+        setMostrarPremiosModal(false);
+    };
+
+    const seleccionarEtiqueta = (etiqueta: string) => {
+        setEtiquetaSeleccionada(etiqueta);
+        setBusquedaEtiqueta(etiqueta);
+        setMostrarSugerencias(false);
+    };
+
+    const limpiarFiltroEtiqueta = () => {
+        setEtiquetaSeleccionada(null);
+        setBusquedaEtiqueta("");
+    };
+
     return (
-    <div className="Home">
-      {user.type !== 'anonimo' && (
-      <>
-        <h2>Bienvenido, {user.username}</h2>
-          <button onClick={()=> navigate('/Notificaciones')}>Notificaciones</button>
-          
-        <button onClick={logout} className="Botón-logout">
-        Cerrar sesión
-        </button>
-      
-      </>)}
-        {user.type !== 'anonimo' && (
-            <button 
-                onClick={() => setMostrarModal(true)}
-                style={{
-                    position: 'absolute',
-                    top: '20px',
-                    right: '20px',
-                    padding: '10px 15px',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                }}
-            >
-                Crear Publicación
-            </button>
-        )}
-            
-        {mostrarModal && (
-            <div style={{
-                position: 'fixed',
-                top: '0',
-                left: '0',
-                width: '100%',
-                height: '100%',
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 1000
-            }}>
-                <div style={{
-                    backgroundColor: 'white',
-                    padding: '20px',
-                    borderRadius: '8px',
-                    width: '80%',
-                    maxWidth: '500px'
-                }}>
-                    <h2>Nueva Publicación</h2>
-                        
-                    <div style={{ marginBottom: '15px' }}>
-                        <label>Título:</label>
-                        <input
-                            type="text"
-                            value={titulo}
-                            onChange={(e) => setTitulo(e.target.value)}
-                            style={{ width: '100%', padding: '8px' }}
-                        />
-                    </div>
-                        
-                    <div style={{ marginBottom: '15px' }}>
-                        <label>Contenido:</label>
-                        <textarea
-                            value={contenido}
-                            onChange={(e) => setContenido(e.target.value)}
-                            style={{ width: '100%', padding: '8px', minHeight: '100px' }}
-                        />
-                    </div>
-                        
-                    <div style={{ marginBottom: '15px' }}>
-                        <label>Tags (separados por espacios, ej: #tag1 #tag2):</label>
-                        <input
-                            type="text"
-                            value={tags}
-                            onChange={(e) => setTags(e.target.value)}
-                            style={{ width: '100%', padding: '8px' }}
-                        />
-                    </div>
-                        
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+        <div className="home-container">
+            <div className="header">
+                {user.type === 'anonimo' ? (
+                    <h2>Estás navegando como usuario anónimo</h2>
+                ) : (
+                    <div className="user-info">
+                        <h2>Bienvenido, {user.username}</h2>
                         <button 
-                            onClick={() => setMostrarModal(false)}
-                            style={{ padding: '8px 16px', backgroundColor: '#f44336', color: 'white' }}
+                            onClick={() => navigate('/Notificaciones')} 
+                            className="notifications-btn"
                         >
-                            Cancelar
+                            Notificaciones
                         </button>
-                        <button 
-                            onClick={handleCrearPublicacion}
-                            style={{ padding: '8px 16px', backgroundColor: '#4CAF50', color: 'white' }}
-                        >
-                            Publicar
+                        <button onClick={logout} className="logout-btn">
+                            Cerrar sesión
                         </button>
+                    </div>
+                )}
+            </div>
+
+            {user.type !== 'anonimo' && (
+                <button 
+                    onClick={() => setMostrarModal(true)}
+                    className="create-post-btn"
+                >
+                    Crear Publicación
+                </button>
+            )}
+
+            {mostrarModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2 className="modal-title">Nueva Publicación</h2>
+                        
+                        <div className="modal-field">
+                            <label>Título:</label>
+                            <input
+                                type="text"
+                                value={titulo}
+                                onChange={(e) => setTitulo(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="modal-field">
+                            <label>Contenido:</label>
+                            <textarea
+                                value={contenido}
+                                onChange={(e) => setContenido(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="modal-field">
+                            <label>Tags (separados por espacios, ej: #tag1 #tag2):</label>
+                            <input
+                                type="text"
+                                value={tags}
+                                onChange={(e) => setTags(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="modal-actions">
+                            <button 
+                                onClick={() => setMostrarModal(false)}
+                                className="cancel-btn"
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                onClick={handleCrearPublicacion}
+                                className="submit-btn"
+                            >
+                                Publicar
+                            </button>
+                        </div>
                     </div>
                 </div>
+            )}
+
+            <div className="filter-container">
+                <label>Filtrar publicaciones:</label>
+                <select 
+                    className="filter-select"
+                    value={filtro.filtro}
+                    onChange={handleFiltroChange}
+                >
+                    <option value="Sin filtro">Sin filtro</option>
+                    <option value="Puntuación (Mayor a Menor)">Puntuación (Mayor a Menor)</option>
+                    <option value="Puntuación (Menor a Mayor)">Puntuación (Menor a Mayor)</option>
+                    <option value="Más recientes">Más recientes</option>
+                </select>
             </div>
-        )}
 
-      <div className="filtro-publicaciones">
-        <label htmlFor="filtro-publicaciones">Filtrar publicaciones:</label>
-        <select 
-              id="filtro-publicaciones"
-              value={filtro.filtro}
-              onChange={handleFiltroChange}
-            >
-              <option value="Sin filtro">Sin filtro</option>
-              <option value="Puntuación (Mayor a Menor)">Puntuación (Mayor a Menor)</option>
-              <option value="Puntuación (Menor a Mayor)">Puntuación (Menor a Mayor)</option>
-              <option value="Más recientes">Más recientes</option>
-        </select>
-      </div>
+            <div className="search-container">
+                <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Buscar etiquetas..."
+                    value={busquedaEtiqueta}
+                    onChange={(e) => {
+                        setBusquedaEtiqueta(e.target.value);
+                        setMostrarSugerencias(true);
+                    }}
+                    onFocus={() => setMostrarSugerencias(true)}
+                />
+                
+                {etiquetaSeleccionada && (
+                    <div style={{ marginTop: '10px' }}>
+                        <span>Filtrado por: {etiquetaSeleccionada} </span>
+                        <button 
+                            onClick={limpiarFiltroEtiqueta}
+                            style={{ 
+                                marginLeft: '10px',
+                                padding: '2px 5px',
+                                background: '#f44336',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '3px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            x
+                        </button>
+                    </div>
+                )}
 
-            
-      <div className="lista-publicaciones">
-                {publicaciones.map((publicacion: any) => (
-                    <div key={publicacion.id} className="publicacion">
-                        {user.type !== 'anonimo' && (
-                            <div className="voting-buttons" style={{ 
-                                display: 'flex', 
-                                alignItems: 'center',
-                                gap: '5px', 
-                                marginBottom: '10px' 
-                            }}>
-                                <button
-                                    onClick={() => handleVote(publicacion.id, 1)}
-                                    style={{
-                                        backgroundColor: userVotes[publicacion.id] === 1 ? '#4CAF50' : '#e0e0e0',
-                                        color: userVotes[publicacion.id] === 1 ? 'white' : 'black',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        padding: '5px 10px',
-                                        cursor: 'pointer',
-                                        fontWeight: 'bold'
-                                    }}
-                                    disabled={cargandoPublicaciones}
-                                >
-                                    ↑
-                                </button>
-                                
-                                <span style={{ 
-                                    minWidth: '20px', 
-                                    textAlign: 'center',
-                                    fontWeight: 'bold'
-                                }}>
-                                    {publicacion.score}
-                                </span>
-                                
-                                <button
-                                    onClick={() => handleVote(publicacion.id, -1)}
-                                    style={{
-                                        backgroundColor: userVotes[publicacion.id] === -1 ? '#f44336' : '#e0e0e0',
-                                        color: userVotes[publicacion.id] === -1 ? 'white' : 'black',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        padding: '5px 10px',
-                                        cursor: 'pointer',
-                                        fontWeight: 'bold'
-                                    }}
-                                    disabled={cargandoPublicaciones}
-                                >
-                                    ↓
-                                </button>
-                            </div>
-                        )}
-                        
-                        {user.type === 'anonimo' && (
-                            <p>Puntuación: {publicacion.score}</p>
-                        )}
-                        
-                        <h3>{publicacion.author}</h3>
-                        <h3>{publicacion.title}</h3>
-                        <p>{publicacion.content}</p>
+                {etiquetasFiltradas.map((etiqueta: {nombre: string, id?: number}) => (
+                    <div 
+                        key={etiqueta.nombre} 
+                        className="tag-suggestion"
+                        onClick={() => seleccionarEtiqueta(etiqueta.nombre)}
+                    >
+                        #{etiqueta.nombre}
                     </div>
                 ))}
             </div>
-    </div>
+            <div className="posts-list">
+                {publicaciones?.map((publicacion: any) => (
+                <div key={publicacion.id} className="post" style={{ position: 'relative' }}>
+                <div className="post-header">
+                    <span className="post-author">{publicacion.author}</span>
+                    <div>
+                        {publicacion.tags?.map((tag: string) => (
+                        <span 
+                            key={tag} 
+                            style={{
+                                marginLeft: '5px',
+                                background: '#e0e0e0',
+                                padding: '2px 5px',
+                                borderRadius: '3px',
+                                fontSize: '0.8rem'
+                            }}
+                            >
+                            #{tag}
+                        </span>
+                        ))}
+                    </div>
+                </div>
+      
+                
+                <h3 className="post-title">{publicacion.title}</h3>
+                <p className="post-content">{publicacion.content}</p>
+      
+                    
+                    <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginTop: '15px'
+                    }}>
+                        
+                        {user.type !== 'anonimo' ? (
+                        <div className="voting-buttons">
+                            <button
+                            onClick={() => handleVote(publicacion.id, 1)}
+                            className={`vote-btn upvote ${userVotes[publicacion.id] === 1 ? 'active' : ''}`}
+                            disabled={cargandoPublicaciones}
+                            >
+                            ↑
+                            </button>
+                            
+                            <span className="score">{publicacion.score}</span>
+                            
+                            <button
+                            onClick={() => handleVote(publicacion.id, -1)}
+                            className={`vote-btn downvote ${userVotes[publicacion.id] === -1 ? 'active' : ''}`}
+                            disabled={cargandoPublicaciones}
+                            >
+                            ↓
+                            </button>
+                        </div>
+                        ) : (
+                        <p>Puntuación: {publicacion.score}</p>
+                        )}
+                        
+                        
+                        {user.type !== 'anonimo' && (
+                        <div className="premio-badge">
+                            <button 
+                            onClick={() => {
+                                setPublicacionSeleccionada(publicacion.id);
+                                setMostrarPremiosModal(true);
+                            }}
+                            className="premio-btn"
+                            >
+                            🏅
+                            </button>
+                            {publicacion.premios?.length > 0 && (
+                            <span className="premio-count">
+                                {publicacion.premios.length}
+                            </span>
+                            )}
+                        </div>
+                        )}
+                    </div>
+                    </div>
+                ))}
+                </div>
+            
+            {mostrarPremiosModal && (
+            <div className="modal-overlay">
+                <div className="modal-content" style={{ maxWidth: '400px' }}>
+                <h2>Premiar publicación</h2>
+                <p>Selecciona un premio:</p>
+                
+                <div className="premios-grid">
+                    {premios?.map((premio: any, index: number) => {
+                    const emojis = ['💡', '😂', '🔥', '😡'];
+                    const yaPremiada = (publicaciones as Array<{id: number, premios?: Array<{idPremiador: number, id: number}>}> | undefined)
+                        ?.find(p => p.id === publicacionSeleccionada)
+                        ?.premios
+                        ?.some((p: {idPremiador: number, id: number}) => p.idPremiador === user?.id && p.id === premio.id);
+                    
+                        return (
+                            <button
+                            key={premio.id}
+                            onClick={() => handleSeleccionarPremio(premio.id)}
+                            className="premio-option"
+                            style={{
+                                backgroundColor: yaPremiada ? '#e0e0e0' : 'transparent'
+                            }}
+                            >
+                            <span className="premio-emoji">{emojis[index]}</span>
+                            <span>{premio.nombre}</span>
+                            {yaPremiada && <span>(Ya premiado)</span>}
+                            </button>
+                    );
+                    })}
+                </div>
+                
+                <div className="modal-actions">
+                    <button 
+                    onClick={() => setMostrarPremiosModal(false)}
+                    className="cancel-btn"
+                    >
+                    Cancelar
+                    </button>
+                </div>
+                </div>
+            </div>
+            )}
+
+
+        </div>
     );
-    
 };
 
 export default Home;

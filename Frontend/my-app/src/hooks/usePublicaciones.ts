@@ -58,12 +58,36 @@ export function usePublicaciones(Datos:{filtro: string}) { //listo
     });
 }
 
-export function usePublicacionesPorEtiqueta(Datos:{etiqueta: string, filtro: string}) {
+export function usePublicacionesUsuario(idUsuario: string) { 
+    return useQuery({
+        queryKey: ['publicacionesUsuario'],
+        queryFn: async () => {
+            const respuesta = await api.get(`api/v1/publicaciones${idUsuario}`);
+            return respuesta.data;
+        }
+    });
+}
+
+export function usePublicacionesPorEtiqueta(Datos:{etiqueta: string, filtro: string}) { //listo
     return useQuery({
         queryKey: ['publicacionesEtiqueta', Datos],
         queryFn: async (Datos) => {
             const respuesta = await api.get('api/v1/publicaciones', Datos);
             return respuesta.data;
+        }
+    });
+}
+
+export function useEliminarPublicacion(){ 
+    const clienteQuery = useQueryClient();
+    return useMutation({
+        mutationFn: async (idPublicacion: number)  => {
+            const respuesta = await api.patch('api/v1/publicaciones', idPublicacion);
+            return respuesta.data
+        },
+        onSuccess: () => {
+            clienteQuery.invalidateQueries({queryKey:['publicaciones']});
+            clienteQuery.invalidateQueries({queryKey:['publicacionesEtiqueta']});
         }
     });
 }
