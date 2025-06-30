@@ -35,7 +35,7 @@ export function useVotarPublicacion(){ //listo
     });
 }
 
-export function useDarPremio(){
+export function useDarPremio(){ // listo
     const clienteQuery = useQueryClient();
     return useMutation({
         mutationFn: async (premioData:{idPremiador: number, idPublicacion: number, idPremio: number})  => {
@@ -48,31 +48,31 @@ export function useDarPremio(){
     });
 }
 
-export function usePublicaciones(Datos:{filtro: string}) { //listo
+export function usePublicaciones(filtro: string) { //listo
     return useQuery({
-        queryKey: ['publicaciones', Datos],
-        queryFn: async (Datos) => {
-            const respuesta = await api.get('api/v1/publicaciones', Datos);
+        queryKey: ['publicaciones'],
+        queryFn: async () => {
+            const respuesta = await api.get(`api/v1/publicaciones/${filtro}`);
             return respuesta.data;
         }
     });
 }
 
-export function usePublicacionesUsuario(idUsuario: string) { 
+export function usePublicacionesUsuario(idUsuario: number) { 
     return useQuery({
         queryKey: ['publicacionesUsuario'],
         queryFn: async () => {
-            const respuesta = await api.get(`api/v1/publicaciones${idUsuario}`);
+            const respuesta = await api.get(`api/v1/publicaciones/${idUsuario}`);
             return respuesta.data;
         }
     });
 }
 
-export function usePublicacionesPorEtiqueta(Datos:{etiqueta: string, filtro: string}) { //listo
+export function usePublicacionesPorEtiqueta(etiqueta: string, filtro: string) { //listo
     return useQuery({
-        queryKey: ['publicacionesEtiqueta', Datos],
+        queryKey: ['publicacionesEtiqueta'],
         queryFn: async (Datos) => {
-            const respuesta = await api.get('api/v1/publicaciones', Datos);
+            const respuesta = await api.get(`api/v1/publicaciones/${etiqueta}/${filtro}`);
             return respuesta.data;
         }
     });

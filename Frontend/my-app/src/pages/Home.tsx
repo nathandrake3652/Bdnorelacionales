@@ -3,6 +3,7 @@ import { useUserProfile } from '../hooks/useUserProfile';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { usePublicaciones, usePublicacionesPorEtiqueta, useCrearPublicacion, useVotarPublicacion, useDarPremio } from '../hooks/usePublicaciones';
+import {useComentarios, useCrearComentario, useVotarComentario} from '../hooks/useComentarios';
 import { useEtiquetas } from '../hooks/useTags';
 import './Home.css';
 import { usePremios } from '../hooks/usePremios';
@@ -31,16 +32,31 @@ export const Home = () => {
     const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState<string | null>(null);
     const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
     
+    // cosas de comentarios
+    const [comentariosAbiertos, setComentariosAbiertos] = useState<Record<number, boolean>>({});
+    const [comentarioEditando, setComentarioEditando] = useState<{
+        publicacionId: number | null;
+        comentarioPadreId: number | null;
+        tipo: 'publicacion' | 'comentario';
+        content: string;
+    }>({
+        publicacionId: null,
+        comentarioPadreId: null,
+        tipo: 'publicacion',
+        content: ''
+    });
+
     //hooks
     const { data: publicaciones, isLoading: cargandoPublicaciones } = 
-        etiquetaSeleccionada 
-            ? usePublicacionesPorEtiqueta({ etiqueta: etiquetaSeleccionada, filtro: filtro.filtro })
-            : usePublicaciones(filtro);
+    etiquetaSeleccionada 
+        ? usePublicacionesPorEtiqueta(etiquetaSeleccionada, filtro.filtro)
+        : usePublicaciones(filtro.filtro);
     
     const { data: etiquetas } = useEtiquetas();
     const { mutate: crearPublicacion } = useCrearPublicacion();
     const { mutate: votarPublicacion } = useVotarPublicacion();
     const { data: premios } = usePremios();
+    const { mutate: crearComentario } = useCrearComentario();
     const { mutate: darPremio } = useDarPremio();
     
     // Estado que maneja votaciones
@@ -150,6 +166,88 @@ export const Home = () => {
     const limpiarFiltroEtiqueta = () => {
         setEtiquetaSeleccionada(null);
         setBusquedaEtiqueta("");
+    };
+
+    //comentarios
+    const Comentario = ({ comentario, profundidad = 0 }: { comentario: any, profundidad?: number }) => {
+        const { mutate: votarComentario } = useVotarComentario();
+        const [mostrarRespuestas, setMostrarRespuestas] = useState(false);
+        const { data: respuestas } = useComentarios(comentario.id, 'comentario');
+
+            return (
+                <div className="comentario" style={{ marginLeft: `${profundidad * 20}px` }}>
+                    <div className="comentario-header">
+                        <span>{comentario.author}</span>
+                        <div className="comentario-votos">
+                            <button 
+                                onClick={() => votarComentario({
+                                    idVotador: user.id,
+                                    score: 1,
+                                    idComentario: comentario.id
+                                })}
+                                disabled={user.type === 'anonimo'}
+                            >↑</button>
+                            <span>{comentario.score}</span>
+                            <button 
+                                onClick={() => votarComentario({
+                                    idVotador: user.id,
+                                    score: -1,
+                                    idComentario: comentario.id
+                                })}
+                                disabled={user.type === 'anonimo'}
+                            >↓</button>
+                        </div>
+                    </div>
+                    <p className="comentario-content">{comentario.content}</p>
+                    
+                    <div className="comentario-actions">
+                        {user.type !== 'anonimo' && (
+                            <button 
+                                onClick={() => setComentarioEditando({
+                                    publicacionId: comentario.publicacionId,
+                                    comentarioPadreId: comentario.id,
+                                    tipo: 'comentario',
+                                    content: ''
+                                })}
+                            >
+                                Responder
+                            </button>
+                        )}
+                        
+                        {respuestas?.length > 0 && (
+                            <button onClick={() => setMostrarRespuestas(!mostrarRespuestas)}>
+                                {mostrarRespuestas ? 'Ocultar respuestas' : `Ver respuestas (${respuestas.length})`}
+                            </button>
+                        )}
+                    </div>
+
+                    {mostrarRespuestas && respuestas?.map((respuesta: any) => (
+                        <Comentario 
+                            key={respuesta.id} 
+                            comentario={respuesta} 
+                            profundidad={profundidad + 1}
+                        />
+                    ))}
+                </div>
+            );
+        };
+    
+        const handleCrearComentario = () => {
+        if (!comentarioEditando.content.trim() || comentarioEditando.publicacionId === null) return;
+        
+        crearComentario({
+            content: comentarioEditando.content,
+            authorId: user.id,
+            publicacionId: comentarioEditando.publicacionId,
+            tipo: comentarioEditando.tipo
+        });
+        
+        setComentarioEditando({
+            publicacionId: null,
+            comentarioPadreId: null,
+            tipo: 'publicacion',
+            content: ''
+        });
     };
 
     return (
@@ -291,29 +389,29 @@ export const Home = () => {
             <div className="posts-list">
                 {publicaciones?.map((publicacion: any) => (
                 <div key={publicacion.id} className="post" style={{ position: 'relative' }}>
-                <div className="post-header">
-                    <span className="post-author">{publicacion.author}</span>
-                    <div>
-                        {publicacion.tags?.map((tag: string) => (
-                        <span 
-                            key={tag} 
-                            style={{
-                                marginLeft: '5px',
-                                background: '#e0e0e0',
-                                padding: '2px 5px',
-                                borderRadius: '3px',
-                                fontSize: '0.8rem'
-                            }}
-                            >
-                            #{tag}
-                        </span>
-                        ))}
+                    <div className="post-header">
+                        <span className="post-author">{publicacion.author}</span>
+                        <div>
+                            {publicacion.tags?.map((tag: string) => (
+                            <span 
+                                key={tag} 
+                                style={{
+                                    marginLeft: '5px',
+                                    background: '#e0e0e0',
+                                    padding: '2px 5px',
+                                    borderRadius: '3px',
+                                    fontSize: '0.8rem'
+                                }}
+                                >
+                                #{tag}
+                            </span>
+                            ))}
+                        </div>
                     </div>
-                </div>
       
                 
-                <h3 className="post-title">{publicacion.title}</h3>
-                <p className="post-content">{publicacion.content}</p>
+                    <h3 className="post-title">{publicacion.title}</h3>
+                    <p className="post-content">{publicacion.content}</p>
       
                     
                     <div style={{ 
@@ -365,6 +463,71 @@ export const Home = () => {
                             </span>
                             )}
                         </div>
+                        )}
+                    </div>
+
+                    <div className="comentarios-section">
+                        <div className="comentarios-controls">
+                            <button 
+                                onClick={() => setComentariosAbiertos(prev => ({
+                                    ...prev,
+                                    [publicacion.id]: !prev[publicacion.id]
+                                }))}
+                            >
+                                {comentariosAbiertos[publicacion.id] ? 'Ocultar comentarios' : 'Ver comentarios'}
+                            </button>
+
+                            {user.type !== 'anonimo' && (
+                                <button 
+                                    onClick={() => setComentarioEditando({
+                                        publicacionId: publicacion.id,
+                                        comentarioPadreId: null,
+                                        tipo: 'publicacion',
+                                        content: ''
+                                    })}
+                                >
+                                    Añadir comentario
+                                </button>
+                            )}
+                        </div>
+
+                        {comentariosAbiertos[publicacion.id] && (
+                            <div className="comentarios-list">
+                                {useComentarios(publicacion.id, 'publicacion').data?.map((comentario: any) => (
+                                    <Comentario key={comentario.id} comentario={comentario} />
+                                ))}
+                            </div>
+                        )}
+
+                        {comentarioEditando.publicacionId === publicacion.id && (
+                            <div className="comentario-form">
+                                <textarea
+                                    value={comentarioEditando.content}
+                                    onChange={(e) => setComentarioEditando(prev => ({
+                                        ...prev,
+                                        content: e.target.value
+                                    }))}
+                                    placeholder="Escribe tu comentario..."
+                                />
+                                <div className="comentario-form-actions">
+                                    <button 
+                                        onClick={handleCrearComentario}
+                                        disabled={!comentarioEditando.content.trim() || comentarioEditando.publicacionId === null}
+                                    >
+                                        Enviar
+                                    </button>
+                                    <button 
+                                        onClick={() => setComentarioEditando({
+                                            publicacionId: null,
+                                            comentarioPadreId: null,
+                                            tipo: 'publicacion',
+                                            content: ''
+                                        })}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
                         )}
                     </div>
                     </div>

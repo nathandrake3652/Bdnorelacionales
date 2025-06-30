@@ -3,17 +3,17 @@ import api from '../api/axios';
 
 interface ComentarioData{
     content: string;
-    score: number;
     authorId: number;
     publicacionId: number;
+    tipo: string;
 }
 
 
 export function useCrearComentario(){
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async ({content, score, authorId, publicacionId}:ComentarioData)  => {
-            const respuesta = await api.post('api/v1/comentario',{content, score, authorId, publicacionId});
+        mutationFn: async ({content, authorId, publicacionId, tipo}:ComentarioData)  => {
+            const respuesta = await api.post('api/v1/comentario',{content, authorId, publicacionId, tipo});
             return respuesta.data
         },
         onSuccess: () => {
@@ -35,11 +35,11 @@ export function useVotarComentario(){
     });
 }
 
-export function useComentarios(publicacionId: number) {
+export function useComentarios(publicacionId: number, filtro: string) {
     return useQuery({
-        queryKey: ['comentarios', publicacionId],
+        queryKey: ['comentarios'],
         queryFn: async () => {
-            const respuesta = await api.get(`api/v1/comentario/${publicacionId}`);
+            const respuesta = await api.get(`api/v1/comentario/${filtro}/${publicacionId}`);
             return respuesta.data;
         }
     });
