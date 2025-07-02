@@ -19,6 +19,7 @@ export function useRegister(onSuccess: () => void, onFail:(error:string)=>void) 
     return useMutation<Registerresponse,AxiosError,Registerdata>({
         mutationFn: async ({username, correo, password, type}:Registerdata): Promise<Registerresponse> => {
             const respuesta = await api.post('auth/register',{username, correo, password, type});
+            console.log(respuesta.data);
             return respuesta.data;
         },
         onSuccess: () => {
