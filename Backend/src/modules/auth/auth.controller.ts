@@ -28,7 +28,7 @@ export class AuthController {
     profile(
         @Request() req
     ) {
-     return req.user.lean(); 
+     return req.user; 
     }
     
     @Post('anonimo')
