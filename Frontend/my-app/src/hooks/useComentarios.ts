@@ -16,8 +16,10 @@ export function useCrearComentario(){
             const respuesta = await api.post('api/v1/comentario',{content, authorId, publicacionId, tipo});
             return respuesta.data
         },
-        onSuccess: () => {
-            clienteQuery.invalidateQueries({queryKey:['comentarios']});
+        onSuccess: (_, variables) => {
+            clienteQuery.invalidateQueries({
+                queryKey:['comentarios', variables.publicacionId, variables.tipo]
+            });
         }
     });
 }
@@ -37,7 +39,7 @@ export function useVotarComentario(){
 
 export function useComentarios(publicacionId: number, filtro: string) {
     return useQuery({
-        queryKey: ['comentarios'],
+        queryKey: ['comentarios', publicacionId, filtro],
         queryFn: async () => {
             const respuesta = await api.get(`api/v1/comentario/${filtro}/${publicacionId}`);
             return respuesta.data;

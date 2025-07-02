@@ -33,17 +33,14 @@ export const Home = () => {
     const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
     
     // cosas de comentarios
-    const [comentariosAbiertos, setComentariosAbiertos] = useState<Record<number, boolean>>({});
     const [comentarioEditando, setComentarioEditando] = useState<{
-        publicacionId: number | null;
-        comentarioPadreId: number | null;
-        tipo: 'publicacion' | 'comentario';
-        content: string;
+    publicacionId: number | null;
+    tipo: 'publicacion' | 'comentario';
+    content: string;
     }>({
-        publicacionId: null,
-        comentarioPadreId: null,
-        tipo: 'publicacion',
-        content: ''
+    publicacionId: null,
+    tipo: 'publicacion',
+    content: ''
     });
 
     //hooks
@@ -63,6 +60,7 @@ export const Home = () => {
     const [userVotes, setUserVotes] = useState<Record<number, number>>({});
 
     // Filtrar etiquetas según la búsqueda
+    const [comentariosAbiertos, setComentariosAbiertos] = useState<Record<number, boolean>>({});
     const etiquetasFiltradas = etiquetas?.filter((etiqueta: any) =>
     etiqueta.nombre?.toLowerCase().includes(busquedaEtiqueta.toLowerCase())
     ) || [];
@@ -126,13 +124,17 @@ export const Home = () => {
         
         if (currentVote === newVoteValue) {
             scoreChange = -newVoteValue;
-        } else if (currentVote === 0) {
+        } 
+        
+        else if (currentVote === 0) {
             scoreChange = newVoteValue;
-        } else {
-            scoreChange = newVoteValue - currentVote;
         }
         
-        const newVote = scoreChange === -newVoteValue ? 0 : newVoteValue;
+        else {
+            scoreChange = newVoteValue; // (1 o -1)
+        }
+        
+        const newVote = currentVote === newVoteValue ? 0 : newVoteValue;
         setUserVotes(prev => ({
             ...prev,
             [publicacionId]: newVote
@@ -204,8 +206,7 @@ export const Home = () => {
                         {user.type !== 'anonimo' && (
                             <button 
                                 onClick={() => setComentarioEditando({
-                                    publicacionId: comentario.publicacionId,
-                                    comentarioPadreId: comentario.id,
+                                    publicacionId: comentario.id,
                                     tipo: 'comentario',
                                     content: ''
                                 })}
@@ -233,21 +234,32 @@ export const Home = () => {
         };
     
         const handleCrearComentario = () => {
-        if (!comentarioEditando.content.trim() || comentarioEditando.publicacionId === null) return;
+            if (!comentarioEditando.content.trim() || comentarioEditando.publicacionId === null) return;
+            
+            crearComentario({
+                content: comentarioEditando.content,
+                authorId: user.id,
+                publicacionId: comentarioEditando.publicacionId,
+                tipo: comentarioEditando.tipo
+            });
+            
+            setComentarioEditando({
+                publicacionId: null,
+                tipo: 'publicacion',
+                content: ''
+            });
+        };
+
+    const ComentariosList = ({ publicacionId }: { publicacionId: number }) => {
+        const { data: comentarios } = useComentarios(publicacionId, 'publicacion');
         
-        crearComentario({
-            content: comentarioEditando.content,
-            authorId: user.id,
-            publicacionId: comentarioEditando.publicacionId,
-            tipo: comentarioEditando.tipo
-        });
-        
-        setComentarioEditando({
-            publicacionId: null,
-            comentarioPadreId: null,
-            tipo: 'publicacion',
-            content: ''
-        });
+        return (
+            <div className="comentarios-list">
+                {comentarios?.map((comentario: any) => (
+                    <Comentario key={comentario.id} comentario={comentario} />
+                ))}
+            </div>
+        );
     };
 
     return (
@@ -480,8 +492,7 @@ export const Home = () => {
                             {user.type !== 'anonimo' && (
                                 <button 
                                     onClick={() => setComentarioEditando({
-                                        publicacionId: publicacion.id,
-                                        comentarioPadreId: null,
+                                        publicacionId: publicacion.id, // ID de la publicación
                                         tipo: 'publicacion',
                                         content: ''
                                     })}
@@ -492,11 +503,7 @@ export const Home = () => {
                         </div>
 
                         {comentariosAbiertos[publicacion.id] && (
-                            <div className="comentarios-list">
-                                {useComentarios(publicacion.id, 'publicacion').data?.map((comentario: any) => (
-                                    <Comentario key={comentario.id} comentario={comentario} />
-                                ))}
-                            </div>
+                            <ComentariosList publicacionId={publicacion.id} />
                         )}
 
                         {comentarioEditando.publicacionId === publicacion.id && (
@@ -519,7 +526,6 @@ export const Home = () => {
                                     <button 
                                         onClick={() => setComentarioEditando({
                                             publicacionId: null,
-                                            comentarioPadreId: null,
                                             tipo: 'publicacion',
                                             content: ''
                                         })}
