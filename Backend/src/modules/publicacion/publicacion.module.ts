@@ -6,6 +6,7 @@ import { PublicacionController } from './publicacion.controller';
 import { PublicacionService } from './publicacion.service';
 import { publicacionRepository } from './publicacion.repository';
 import { NotificacionModule } from '../notificacion/notificacion.module';
+import { PremioModule } from '../premio/premio.module';
 
 
 
@@ -13,7 +14,8 @@ import { NotificacionModule } from '../notificacion/notificacion.module';
   imports: [
     MongooseModule.forFeature([{ name: Publicacion.name, schema: PublicacionSchema }]),
     UserModule,
-    NotificacionModule 
+    NotificacionModule,
+    PremioModule
   ],
   controllers: [PublicacionController],
   providers: [PublicacionService,publicacionRepository],
