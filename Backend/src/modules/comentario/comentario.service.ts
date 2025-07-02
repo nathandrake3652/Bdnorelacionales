@@ -5,12 +5,16 @@ import { Types } from 'mongoose';
 import { CreateComentarioDto } from './dto/create-comentario.dto';
 import { UsuarioRepository } from '../user/user.repository';
 import { VotarComentarioDto } from './dto/votarcomentario.dto';
+import { NotificacionService } from '../notificacion/notificacion.service';
+import { publicacionRepository } from '../publicacion/publicacion.repository';
 
 
 @Injectable()
 export class ComentarioService {
   constructor(private readonly comentarioRepo: ComentarioRepository,
     private readonly userRepo: UsuarioRepository, 
+    private readonly noti: NotificacionService,
+     private readonly publi: publicacionRepository
   ) {}
 
   async crearComentario(dto: CreateComentarioDto) {
@@ -31,6 +35,17 @@ export class ComentarioService {
     },
     parentCommentId: dto.parentCommentId ? new Types.ObjectId(dto.parentCommentId) : undefined,
   });
+  const publicacion = await this.publi.findById(dto.publicacionId);
+  if (!publicacion) {
+    throw new Error('Publicación no encontrada');
+  }
+  await this.noti.crearNotificacion({
+    usuarioDestinoId: publicacion.author.id.toString(), // Asegúrate de que publicacion.author.id sea un ObjectId
+    origenUsuarioId: dto.authorId,
+    origenUsername: usuario.username,
+    tipo: 'comentario',
+    postId: dto.publicacionId,
+  })
 
   return nuevoComentario;
 }

@@ -19,7 +19,7 @@ export class PublicacionController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.publicacionService.findOne(+id);
+    return this.publicacionService.findOne(id);
   }
 
   @Patch(':id')
@@ -46,5 +46,6 @@ async publicacionesPorEtiquetaYFiltro(
 ) {
   return this.publicacionService.getPorEtiquetaYFiltro(etiqueta, filtro);
 }
+
 
 }

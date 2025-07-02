@@ -7,11 +7,13 @@ import { UsuarioRepository } from '../user/user.repository';
 import { UsuarioDocument } from '../user/schemas/user.schema';
 import { Types } from 'mongoose';
 import { VotarDto } from './dto/votar.dto';
+import { NotificacionService } from '../notificacion/notificacion.service';
 
 @Injectable()
 export class PublicacionService {
   constructor(private readonly publirepo: publicacionRepository,
     private readonly userRepo: UsuarioRepository,
+    private readonly noti: NotificacionService, // Asegúrate de importar el servicio de notificaciones
     
     
   ) {}
@@ -56,16 +58,17 @@ export class PublicacionService {
   }));
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} publicacion`;
+  async findOne(id: string) {
+   const publicacion = await this.publirepo.findById(id.toString());
+    return publicacion;
   }
 
   update(id: number, updatePublicacionDto: UpdatePublicacionDto) {
     return `This action updates a #${id} publicacion`;
   }
 
-  remove(id: string) {
-    this.publirepo.deletebyId(id.toString());
+  async remove(id: string) {
+    await this.publirepo.deletebyId(id.toString());
     return `publicación con id ${id} eliminada correctamente`;
   }
   
@@ -107,6 +110,18 @@ export class PublicacionService {
   if (!actualizada) {
     throw new Error('Error al actualizar los votos de la publicación');
   }
+  // Notificar al autor de la publicación
+  const autorId = actualizada.author.id.toString();
+  if (autorId !== idVotador) {
+    await this.noti.crearNotificacion({
+      usuarioDestinoId: autorId,
+      origenUsuarioId: idVotador,
+      origenUsername: (await this.userRepo.findById(idVotador)).username,
+      tipo: 'voto',
+      postId: idPublicacion,
+    });
+  }
+
   
   return {
     mensaje: 'Voto procesado correctamente',
