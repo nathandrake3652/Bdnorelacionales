@@ -19,10 +19,6 @@ export const Home = () => {
     const [mostrarPremiosModal, setMostrarPremiosModal] = useState(false);
     const [publicacionSeleccionada, setPublicacionSeleccionada] = useState<string | null>(null);
 
-    //estados para controlar búsqueda
-    const [buscarConfirmado, setBuscarConfirmado] = useState(false);
-
-
     //Crear publicacion
     const [mostrarModal, setMostrarModal] = useState(false);
     const [titulo, setTitulo] = useState("");
@@ -32,7 +28,7 @@ export const Home = () => {
     // Busqueda con etiquetas
     const [busquedaEtiqueta, setBusquedaEtiqueta] = useState("");
     const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState<string | null>(null);
-    const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+
     const [busquedaActiva, setBusquedaActiva] = useState(false);
 
     // cosas de comentarios
@@ -93,12 +89,6 @@ export const Home = () => {
         sessionStorage.removeItem('token');
         navigate('/Login');
     };
-
-    const handleFiltroChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFiltro(e.target.value);
-        setBuscarConfirmado(false);
-    };
-
 
 
     const handleCrearPublicacion = () => {
@@ -169,13 +159,6 @@ export const Home = () => {
         const etiquetaFormateada = etiqueta.startsWith('#') ? etiqueta : `#${etiqueta}`;
         setEtiquetaSeleccionada(etiquetaFormateada);
         setBusquedaEtiqueta(etiquetaFormateada);
-        setMostrarSugerencias(false);
-    };
-
-    const limpiarFiltroEtiqueta = () => {
-        setEtiquetaSeleccionada(null);
-        setBusquedaEtiqueta("");
-        setBuscarConfirmado(false);
     };
 
     //comentarios
