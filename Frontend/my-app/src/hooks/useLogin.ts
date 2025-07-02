@@ -15,10 +15,14 @@ interface LoginData{
   token: string;
 }
 
+interface AnonData{
+  anonid: {token: string;};
+}
+
 export function useLogin(onSuccess: (token: string)=> void, onFail:(error:string)=> void) {
     return useMutation<LoginData,AxiosError,Logindata>({
         mutationFn: async ({correo,password}: Logindata): Promise<LoginData> => {
-            const respuesta = await api.post('api/v1/auth/Login', {correo,password});
+            const respuesta = await api.post('auth/Login', {correo,password});
             console.log(respuesta.data);
             return respuesta.data;
         },
@@ -35,14 +39,14 @@ export function useLogin(onSuccess: (token: string)=> void, onFail:(error:string
 }
 
 export function useAnonLogin(onSuccess: (token: string) => void, onFail: (error: string) => void) {
-  return useMutation<LoginData, AxiosError, AnonLoginData>({
-    mutationFn: async ({type}: AnonLoginData): Promise<LoginData> => {
-      const respuesta = await api.post('api/v1/auth/anonimo');
+  return useMutation<AnonData, AxiosError, AnonLoginData>({
+    mutationFn: async (): Promise<AnonData> => {
+      const respuesta = await api.post('auth/anonimo');
       return respuesta.data;
     },
     onSuccess: (data) => {
-      console.log('Sesión anónima creada', data);
-      onSuccess(data.token);
+      console.log('Sesión anónima creada', data.anonid.token);
+      onSuccess(data.anonid.token);
     },
     onError: (error) => {
       const mensaje = (error.response?.data as { message?: string })?.message || 'Error al crear sesión anónima';

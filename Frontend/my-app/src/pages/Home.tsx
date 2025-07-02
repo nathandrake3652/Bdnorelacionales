@@ -12,14 +12,16 @@ export const Home = () => {
     const { token, setToken } = useAuth();
     const navigate = useNavigate();
     const { data: user, isLoading: cargauser, isError } = useUserProfile();
-    
-    const [filtro, setFiltro] = useState({
-        filtro: "Sin filtro" 
-    });
+    console.log(user);
+    const [filtro, setFiltro] = useState("Sin filtro");
 
     //estados para premios
     const [mostrarPremiosModal, setMostrarPremiosModal] = useState(false);
     const [publicacionSeleccionada, setPublicacionSeleccionada] = useState<string | null>(null);
+
+    //estados para controlar búsqueda
+    const [buscarConfirmado, setBuscarConfirmado] = useState(false);
+
 
     //Crear publicacion
     const [mostrarModal, setMostrarModal] = useState(false);
@@ -31,7 +33,8 @@ export const Home = () => {
     const [busquedaEtiqueta, setBusquedaEtiqueta] = useState("");
     const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState<string | null>(null);
     const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
-    
+    const [busquedaActiva, setBusquedaActiva] = useState(false);
+
     // cosas de comentarios
     const [comentarioEditando, setComentarioEditando] = useState<{
     publicacionId: string | null;
@@ -44,11 +47,15 @@ export const Home = () => {
     });
 
     //hooks
-    const { data: publicaciones, isLoading: cargandoPublicaciones } = 
-    etiquetaSeleccionada 
-        ? usePublicacionesPorEtiqueta(etiquetaSeleccionada, filtro.filtro)
-        : usePublicaciones(filtro.filtro);
-    
+    const { data: publicacionesNormales } = usePublicaciones(filtro);
+    const { data: publicacionesFiltradas } = usePublicacionesPorEtiqueta(
+        busquedaActiva ? etiquetaSeleccionada || '' : '',
+        busquedaActiva ? filtro : 'Sin filtro'
+    );
+
+    const publicaciones = busquedaActiva ? publicacionesFiltradas : publicacionesNormales;
+
+
     const { data: etiquetas } = useEtiquetas();
     const { mutate: crearPublicacion } = useCrearPublicacion();
     const { mutate: votarPublicacion } = useVotarPublicacion();
@@ -71,7 +78,7 @@ export const Home = () => {
         }
     }, [token, navigate]);
 
-    if (cargauser || cargandoPublicaciones) {
+    if (cargauser) {
         return <div>Cargando...</div>;
     }
     
@@ -88,9 +95,8 @@ export const Home = () => {
     };
 
     const handleFiltroChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFiltro({
-            filtro: e.target.value
-        });
+        setFiltro(e.target.value);
+        setBuscarConfirmado(false);
     };
 
 
@@ -102,7 +108,7 @@ export const Home = () => {
         }
 
         const tagsArray = tags.split(' ').filter(tag => tag.startsWith('#')).map(tag => tag.substring(1));
-        
+        console.log(user.id);
         crearPublicacion({
             title: titulo,
             content: contenido,
@@ -117,7 +123,7 @@ export const Home = () => {
     };
 
     const handleVote = (publicacionId: string, newVoteValue: number) => {
-        if (user.type === 'anon') return;
+        if (user.type === 'anonimo') return;
         
         const currentVote = userVotes[publicacionId] || 0;
         let scoreChange = 0;
@@ -141,8 +147,8 @@ export const Home = () => {
         }));
         
         votarPublicacion({
-            userId: user._id,    // Antes: idVotador
-            valor: scoreChange,  // Antes: score
+            userId: user._id,    
+            score: scoreChange,  
             publicacionId: publicacionId
         });
     };
@@ -151,8 +157,8 @@ export const Home = () => {
         if (!publicacionSeleccionada || !user) return;
         
         darPremio({
-            userId: user._id,      // Antes: idPremiador
-            premioId: idPremio,    // Antes: idPremio
+            userId: user._id,      
+            premioId: idPremio,    
             publicacionId: publicacionSeleccionada
         });
         
@@ -160,14 +166,16 @@ export const Home = () => {
     };
 
     const seleccionarEtiqueta = (etiqueta: string) => {
-        setEtiquetaSeleccionada(etiqueta);
-        setBusquedaEtiqueta(etiqueta);
+        const etiquetaFormateada = etiqueta.startsWith('#') ? etiqueta : `#${etiqueta}`;
+        setEtiquetaSeleccionada(etiquetaFormateada);
+        setBusquedaEtiqueta(etiquetaFormateada);
         setMostrarSugerencias(false);
     };
 
     const limpiarFiltroEtiqueta = () => {
         setEtiquetaSeleccionada(null);
         setBusquedaEtiqueta("");
+        setBuscarConfirmado(false);
     };
 
     //comentarios
@@ -180,7 +188,7 @@ export const Home = () => {
         const [userVotes, setUserVotes] = useState<Record<string, number>>({});
 
             const handleVoteComentario = (comentarioId: string, newVoteValue: number) => {
-                    if (user.type === 'anon') return;
+                    if (user.type === 'anonimo') return;
                     
                     const currentVote = userVotes[comentarioId] || 0;
                     let scoreChange = 0;
@@ -200,8 +208,8 @@ export const Home = () => {
                     }));
                     
                     votarComentario({
-                        userId: user._id,    // Antes: idVotador
-                        valor: scoreChange,  // Antes: score
+                        userId: user._id,    
+                        score: scoreChange,  
                         comentarioId: comentarioId
                     });
                 };
@@ -214,20 +222,20 @@ export const Home = () => {
                             <button 
                                 onClick={() => handleVoteComentario(comentario._id, 1)}
                                 className={userVotes[comentario._id] === 1 ? 'active' : ''}
-                                disabled={user.type === 'anon'}
+                                disabled={user.type === 'anonimo'}
                             >↑</button>
-                            <span>{comentario.votos?.reduce((sum: any, voto: any) => sum + voto.valor, 0) || 0}</span>
+                            <span>{comentario.votos?.reduce((sum: any, voto: any) => sum + voto.score, 0) || 0}</span>
                             <button 
                                 onClick={() => handleVoteComentario(comentario._id, -1)}
                                 className={userVotes[comentario._id] === -1 ? 'active' : ''}
-                                disabled={user.type === 'anon'}
+                                disabled={user.type === 'anonimo'}
                             >↓</button>
                         </div>
                     </div>
                     <p className="comentario-content">{comentario.content}</p>
                     
                     <div className="comentario-actions">
-                        {user.type !== 'anon' && (
+                        {user.type !== 'anonimo' && (
                             <button 
                                 onClick={() => setComentarioEditando({
                                     publicacionId: comentario._id,
@@ -286,10 +294,28 @@ export const Home = () => {
         );
     };
 
+    const confirmarBusqueda = () => {
+        if (!etiquetaSeleccionada && filtro === "Sin filtro") {
+            
+            setBusquedaActiva(false);
+        } else {
+            
+            setBusquedaActiva(true);
+        }
+    };
+
+    const limpiarBusqueda = () => {
+        setBusquedaActiva(false);
+        setEtiquetaSeleccionada(null);
+        setFiltro("Sin filtro");
+    };
+
+    
+
     return (
         <div className="home-container">
             <div className="header">
-                {user.type === 'anon' ? (
+                {user.type === 'anonimo' ? (
                     <h2>Estás navegando como usuario anónimo</h2>
                 ) : (
                     <div className="user-info">
@@ -308,7 +334,7 @@ export const Home = () => {
                 )}
             </div>
 
-            {user.type !== 'anon' && (
+            {user.type !== 'anonimo' && (
                 <button 
                     onClick={() => setMostrarModal(true)}
                     className="create-post-btn"
@@ -369,47 +395,35 @@ export const Home = () => {
             <div className="filter-container">
                 <label>Filtrar publicaciones:</label>
                 <select 
-                    className="filter-select"
-                    value={filtro.filtro}
-                    onChange={handleFiltroChange}
+                    value={filtro}
+                    onChange={(e) => setFiltro(e.target.value)}
                 >
                     <option value="Sin filtro">Sin filtro</option>
-                    <option value="Puntuación (Mayor a Menor)">Puntuación (Mayor a Menor)</option>
-                    <option value="Puntuación (Menor a Mayor)">Puntuación (Menor a Mayor)</option>
-                    <option value="Más recientes">Más recientes</option>
+                    <option value="recientes">Más recientes</option>
+                    <option value="populares">Más populares</option>
                 </select>
             </div>
 
             <div className="search-container">
                 <input
                     type="text"
-                    className="search-input"
-                    placeholder="Buscar etiquetas..."
-                    value={busquedaEtiqueta}
+                    placeholder="Ej: #react"
+                    value={etiquetaSeleccionada || ''}
                     onChange={(e) => {
-                        setBusquedaEtiqueta(e.target.value);
-                        setMostrarSugerencias(true);
+                    const value = e.target.value;
+                    setEtiquetaSeleccionada(value.startsWith('#') ? value : `#${value}`);
                     }}
-                    onFocus={() => setMostrarSugerencias(true)}
                 />
-                
+                <button onClick={confirmarBusqueda}>
+                    {busquedaActiva ? "Refrescar" : "Buscar"}
+                </button>
+                                
                 {etiquetaSeleccionada && (
                     <div style={{ marginTop: '10px' }}>
                         <span>Filtrado por: {etiquetaSeleccionada} </span>
-                        <button 
-                            onClick={limpiarFiltroEtiqueta}
-                            style={{ 
-                                marginLeft: '10px',
-                                padding: '2px 5px',
-                                background: '#f44336',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '3px',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            x
-                        </button>
+                        {busquedaActiva && (
+                            <button onClick={limpiarBusqueda}>Limpiar</button>
+                        )}
                     </div>
                 )}
 
@@ -458,22 +472,20 @@ export const Home = () => {
                         marginTop: '15px'
                     }}>
                         
-                        {user.type !== 'anon' ? (
+                        {user.type !== 'anonimo' ? (
                         <div className="voting-buttons">
                             <button
                             onClick={() => handleVote(publicacion._id, 1)}
                             className={`vote-btn upvote ${userVotes[publicacion._id] === 1 ? 'active' : ''}`}
-                            disabled={cargandoPublicaciones}
                             >
                             ↑
                             </button>
                             
-                            <span className="score">{publicacion.votos?.reduce((sum: any, voto: any) => sum + voto.valor, 0) || 0}</span>
+                            <span className="score">{publicacion.votos?.reduce((sum: any, voto: any) => sum + voto.score, 0) || 0}</span>
                             
                             <button
                             onClick={() => handleVote(publicacion._id, -1)}
                             className={`vote-btn downvote ${userVotes[publicacion._id] === -1 ? 'active' : ''}`}
-                            disabled={cargandoPublicaciones}
                             >
                             ↓
                             </button>
@@ -483,7 +495,7 @@ export const Home = () => {
                         )}
                         
                         
-                        {user.type !== 'anon' && (
+                        {user.type !== 'anonimo' && (
                         <div className="premio-badge">
                             <button 
                             onClick={() => {
@@ -514,7 +526,7 @@ export const Home = () => {
                                 {(comentariosAbiertos[publicacion._id] ?? false) ? 'Ocultar comentarios' : 'Ver comentarios'}
                             </button>
 
-                            {user.type !== 'anon' && (
+                            {user.type !== 'anonimo' && (
                                 <button 
                                     onClick={() => setComentarioEditando({
                                         publicacionId: publicacion._id, // ID de la publicación

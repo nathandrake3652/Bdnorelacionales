@@ -7,7 +7,7 @@ export function usePremios() {
     return useQuery({
         queryKey: ['premios'],
         queryFn: async () => {
-            const respuesta = await api.get("api/v1/premios");
+            const respuesta = await api.get('/premio');
             return respuesta.data;
         }
     });

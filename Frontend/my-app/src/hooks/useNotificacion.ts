@@ -7,7 +7,7 @@ export function useNotificaciones(userId: string) {
     return useQuery({
         queryKey: ['notificaciones', userId],
         queryFn: async () => {
-            const respuesta = await api.get(`api/v1/comentario/${userId}`);
+            const respuesta = await api.get(`comentario/${userId}`);
             return respuesta.data;
         }
     });

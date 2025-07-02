@@ -6,7 +6,7 @@ export function useEtiquetas() { //listo
     return useQuery({
         queryKey: ['etiquetas'],
         queryFn: async () => {
-            const respuesta = await api.get("api/v1/etiquetas");
+            const respuesta = await api.get('/etiqueta');
             return respuesta.data;
         }
     });
