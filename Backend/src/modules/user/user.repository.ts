@@ -42,4 +42,11 @@ export class UsuarioRepository {
       $addToSet: { bloqueados: blockedId },
     });
   }
+  async findByCorreoToRegister(correo: string): Promise<UsuarioDocument | null> {
+    const user = await this.usuarioModel.findOne({ correo }).exec();
+    if (!user) {
+      return null; // Si no se encuentra el usuario, retorna null
+    }
+    return user;
+  }
 }

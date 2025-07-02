@@ -11,6 +11,7 @@ import { NotificacionService } from '../notificacion/notificacion.service';
 
 import { PremioRepository } from '../premio/premio.repository';
 import { AsignarPremioDto } from './dto/asignar-premio.dto';
+import { EtiquetaService } from '../etiqueta/etiqueta.service';
 
 @Injectable()
 export class PublicacionService {
@@ -18,6 +19,7 @@ export class PublicacionService {
     private readonly userRepo: UsuarioRepository,
     private readonly noti: NotificacionService, // Asegúrate de importar el servicio de notificaciones
     private readonly premioRepository: PremioRepository, // Asegúrate de importar el repositorio de premios
+    private readonly etiquetaService: EtiquetaService
     
     
   ) {}
@@ -27,6 +29,12 @@ export class PublicacionService {
     if (!user) {
       throw new Error('Usuario no encontrado');
     }
+    for (const nombreTag of dto.tags) {
+    const existente = await this.etiquetaService.FindByNombre(nombreTag);
+    if (!existente) {
+      await this.etiquetaService.create({ nombre: nombreTag });
+    }
+  }
     
     const nuevaPublicacion = this.publirepo.create({
     title: dto.title,

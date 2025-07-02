@@ -16,6 +16,9 @@ export class EtiquetaService {
   async findAll() {
     return await this.etiquetaRepository.findAll();
   }
+  async FindByNombre(nombre: string) {
+    return await this.etiquetaRepository.findByNombre(nombre);
+  }
 
   
 }

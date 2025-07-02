@@ -42,4 +42,8 @@ export class UsuarioService {
 
     return CreateResponse('Usuario encontrado', user, 'OK');
   }
+  async findtoregister(correo: string): Promise<UsuarioDocument | null>  {
+    const user = await this.usuarioRepo.findByCorreoToRegister(correo);
+    return user
+  }
 }

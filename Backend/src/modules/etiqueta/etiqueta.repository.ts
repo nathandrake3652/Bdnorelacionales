@@ -33,4 +33,7 @@ export class EtiquetaRepository {
         // Implementa la lógica para eliminar una etiqueta por ID
         return null; // Placeholder
     }
+    async findByNombre(nombre: string): Promise<Etiqueta | null> {
+        return this.etiquetaModel.findOne({ nombre }).exec();
+    }
 }

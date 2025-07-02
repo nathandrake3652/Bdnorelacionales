@@ -11,5 +11,6 @@ import { Etiqueta, EtiquetaSchema } from './schemas/etiqueta.schema';
   ],
   controllers: [EtiquetaController],
   providers: [EtiquetaService,EtiquetaRepository],
+  exports: [EtiquetaService, EtiquetaRepository] // Exportamos el servicio y el repositorio para que puedan ser utilizados en otros módulos
 })
 export class EtiquetaModule {}
