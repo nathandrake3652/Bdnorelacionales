@@ -3,8 +3,8 @@ import api from '../api/axios';
 
 interface ComentarioData{
     content: string;
-    authorId: number;
-    publicacionId: number;
+    authorId: string;
+    publicacionId: string;
     tipo: string;
 }
 
@@ -24,20 +24,20 @@ export function useCrearComentario(){
     });
 }
 
-export function useVotarComentario(){
+export function useVotarComentario() {
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (Rate:{idVotador: number, score: number, idComentario: number})  => {
-            const respuesta = await api.patch('api/v1/comentario', Rate);
-            return respuesta.data
+        mutationFn: async (voteData: {idVotador: string, score: number, idComentario: string}) => {
+            const respuesta = await api.patch('api/v1/comentario/votar', voteData);
+            return respuesta.data;
         },
         onSuccess: () => {
-            clienteQuery.invalidateQueries({queryKey:['comentarios']});
+            clienteQuery.invalidateQueries({queryKey: ['comentarios']});
         }
     });
 }
 
-export function useComentarios(publicacionId: number, filtro: string) {
+export function useComentarios(publicacionId: string, filtro: string) {
     return useQuery({
         queryKey: ['comentarios', publicacionId, filtro],
         queryFn: async () => {
@@ -50,7 +50,7 @@ export function useComentarios(publicacionId: number, filtro: string) {
 export function useEliminarComentario(){ 
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (idComentario: number)  => {
+        mutationFn: async (idComentario: string)  => {
             const respuesta = await api.patch(`api/v1/comentario/${idComentario}`);
             return respuesta.data
         },
@@ -60,7 +60,7 @@ export function useEliminarComentario(){
     });
 }
 
-export function useComentariosUsuario(idUser: number) { 
+export function useComentariosUsuario(idUser: string) { 
     return useQuery({
         queryKey: ['comentariosUsuario', idUser],
         queryFn: async () => {

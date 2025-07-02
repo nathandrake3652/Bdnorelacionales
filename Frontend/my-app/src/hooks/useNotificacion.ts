@@ -1,7 +1,7 @@
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import api from '../api/axios';
 
-export function useNotificaciones(UserId: number) {
+export function useNotificaciones(UserId: string) {
     return useQuery({
         queryKey: ['notificaciones', UserId],
         queryFn: async () => {

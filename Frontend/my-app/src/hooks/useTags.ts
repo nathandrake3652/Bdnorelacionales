@@ -1,9 +1,6 @@
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import api from '../api/axios';
 
-interface EtiquetaData{
-    nombre: string;
-}
 
 export function useEtiquetas() { //listo
     return useQuery({

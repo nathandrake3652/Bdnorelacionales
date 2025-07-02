@@ -4,7 +4,7 @@ import api from '../api/axios';
 interface PublicacionData{
     title: string;
     content: string;
-    authorId: number;
+    authorId: string;
     tags: string[];
 }
 
@@ -24,7 +24,7 @@ export function useCrearPublicacion(){ //listo
 export function useVotarPublicacion(){ //listo
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (Rate:{idVotador: number, score: number, idPublicacion: number})  => {
+        mutationFn: async (Rate:{idVotador: string, score: number, idPublicacion: string})  => {
             const respuesta = await api.patch('api/v1/publicaciones',Rate);
             return respuesta.data
         },
@@ -38,7 +38,7 @@ export function useVotarPublicacion(){ //listo
 export function useDarPremio(){ // listo
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (premioData:{idPremiador: number, idPublicacion: number, idPremio: number})  => {
+        mutationFn: async (premioData:{idPremiador: string, idPublicacion: string, idPremio: string})  => {
             const respuesta = await api.patch('api/v1/publicaciones', premioData);
             return respuesta.data
         },
@@ -58,7 +58,7 @@ export function usePublicaciones(filtro: string) { //listo
     });
 }
 
-export function usePublicacionesUsuario(idUsuario: number) { 
+export function usePublicacionesUsuario(idUsuario: string) { 
     return useQuery({
         queryKey: ['publicacionesUsuario'],
         queryFn: async () => {
@@ -81,7 +81,7 @@ export function usePublicacionesPorEtiqueta(etiqueta: string, filtro: string) { 
 export function useEliminarPublicacion(){ 
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (idPublicacion: number)  => {
+        mutationFn: async (idPublicacion: string)  => {
             const respuesta = await api.patch('api/v1/publicaciones', idPublicacion);
             return respuesta.data
         },
