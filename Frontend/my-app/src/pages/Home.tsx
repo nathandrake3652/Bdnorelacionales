@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { usePublicaciones, usePublicacionesPorEtiqueta, useCrearPublicacion, useVotarPublicacion, useDarPremio } from '../hooks/usePublicaciones';
 import {useComentarios, useCrearComentario, useVotarComentario} from '../hooks/useComentarios';
 import { useEtiquetas } from '../hooks/useTags';
-import './Home.css';
+import '../styles/Home.css';
 import { usePremios } from '../hooks/usePremios';
 
 export const Home = () => {
@@ -295,11 +295,12 @@ export const Home = () => {
                     <div className="user-info">
                         <h2>Bienvenido, {user.username}</h2>
                         <button 
-                            onClick={() => navigate('/Notificaciones')} 
+                            onClick={() => navigate('/PerfilUsuario')} 
                             className="notifications-btn"
                         >
-                            Notificaciones
+                            Perfil
                         </button>
+                        
                         <button onClick={logout} className="logout-btn">
                             Cerrar sesión
                         </button>

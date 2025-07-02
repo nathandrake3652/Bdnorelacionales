@@ -62,7 +62,7 @@ export function usePublicacionesUsuario(idUsuario: string) {
     return useQuery({
         queryKey: ['publicacionesUsuario'],
         queryFn: async () => {
-            const respuesta = await api.get(`api/v1/publicaciones/${idUsuario}`);
+            const respuesta = await api.get(`api/v1/publicaciones/user/${idUsuario}`);
             return respuesta.data;
         }
     });
