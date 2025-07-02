@@ -13,10 +13,10 @@ import { NotificacionModule } from '../notificacion/notificacion.module';
   imports: [
     MongooseModule.forFeature([{ name: Publicacion.name, schema: PublicacionSchema }]),
     UserModule,
-    NotificacionModule // Importa el módulo de Usuario si es necesario
+    NotificacionModule 
   ],
   controllers: [PublicacionController],
   providers: [PublicacionService,publicacionRepository],
-  exports: [PublicacionService, publicacionRepository] // Exporta el servicio y repositorio si es necesario en otros módulos,
+  exports: [PublicacionService, publicacionRepository] 
 })
 export class PublicacionModule {}
