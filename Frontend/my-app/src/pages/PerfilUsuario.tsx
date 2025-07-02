@@ -14,8 +14,8 @@ export const PerfilUsuario = () => {
     const [activeTab, setActiveTab] = useState<'publicaciones' | 'comentarios'>('publicaciones');
 
 
-    const { data: publicaciones, refetch: refetchPublicaciones } = usePublicacionesUsuario(user?._id || '');
-    const { data: comentarios, refetch: refetchComentarios } = useComentariosUsuario(user?._id || '');
+    const { data: publicaciones, refetch: refetchPublicaciones } = usePublicacionesUsuario(user._id);
+    const { data: comentarios, refetch: refetchComentarios } = useComentariosUsuario(user._id);
 
     const { mutate: eliminarPublicacion } = useEliminarPublicacion();
     const { mutate: eliminarComentario } = useEliminarComentario();
@@ -103,7 +103,7 @@ export const PerfilUsuario = () => {
                                     <h3>{publicacion.title}</h3>
                                     <p>{publicacion.content}</p>
                                     <div className="post-meta">
-                                        <span>Likes: {publicacion.votos?.reduce((sum: any, voto: any) => sum + voto.valor, 0) || 0}</span>
+                                        <span>Likes: {publicacion.votos?.reduce((sum: any, voto: any) => sum + voto.score, 0) || 0}</span>
                                         <span>{new Date(publicacion.createdAt).toLocaleDateString()}</span>
                                         <button 
                                             className="delete-button"
@@ -128,7 +128,7 @@ export const PerfilUsuario = () => {
                                     <p>{comentario.content}</p>
                                     <div className="comment-meta">
                                         <span>En: {comentario.publicacionTitle || 'Publicación eliminada'}</span>
-                                        <span>Likes: {comentario.votos?.reduce((sum :any, voto : any) => sum + voto.valor, 0) || 0}</span>
+                                        <span>Likes: {comentario.votos?.reduce((sum :any, voto : any) => sum + voto.score, 0) || 0}</span>
                                         <span>{new Date(comentario.createdAt).toLocaleDateString()}</span>
                                         <button 
                                             className="delete-button"

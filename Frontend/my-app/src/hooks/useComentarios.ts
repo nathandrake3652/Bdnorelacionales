@@ -3,8 +3,8 @@ import api from '../api/axios';
 
 interface ComentarioData{
     content: string;
-    authorId: number;
-    publicacionId: number;
+    authorId: string;
+    publicacionId: string;
     tipo: string;
 }
 
@@ -13,7 +13,7 @@ export function useCrearComentario(){
     const clienteQuery = useQueryClient();
     return useMutation({
         mutationFn: async ({content, authorId, publicacionId, tipo}:ComentarioData)  => {
-            const respuesta = await api.post('api/v1/comentario',{content, authorId, publicacionId, tipo});
+            const respuesta = await api.post('comentario',{content, authorId, publicacionId, tipo});
             return respuesta.data
         },
         onSuccess: (_, variables) => {
@@ -24,24 +24,24 @@ export function useCrearComentario(){
     });
 }
 
-export function useVotarComentario(){
+export function useVotarComentario() {
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (Rate:{idVotador: number, score: number, idComentario: number})  => {
-            const respuesta = await api.patch('api/v1/comentario', Rate);
-            return respuesta.data
+        mutationFn: async (voteData: {userId: string, score: number, comentarioId: string}) => {
+            const respuesta = await api.patch('comentario/votar', voteData);
+            return respuesta.data;
         },
         onSuccess: () => {
-            clienteQuery.invalidateQueries({queryKey:['comentarios']});
+            clienteQuery.invalidateQueries({queryKey: ['comentarios']});
         }
     });
 }
 
-export function useComentarios(publicacionId: number, filtro: string) {
+export function useComentarios(publicacionId: string, filtro: string) {
     return useQuery({
         queryKey: ['comentarios', publicacionId, filtro],
         queryFn: async () => {
-            const respuesta = await api.get(`api/v1/comentario/${filtro}/${publicacionId}`);
+            const respuesta = await api.get(`comentario/${filtro}/${publicacionId}`);
             return respuesta.data;
         }
     });
@@ -50,8 +50,8 @@ export function useComentarios(publicacionId: number, filtro: string) {
 export function useEliminarComentario(){ 
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (idComentario: number)  => {
-            const respuesta = await api.patch(`api/v1/comentario/${idComentario}`);
+        mutationFn: async (comentarioId: string)  => {
+            const respuesta = await api.patch(`comentario/${comentarioId}`);
             return respuesta.data
         },
         onSuccess: () => {
@@ -60,11 +60,11 @@ export function useEliminarComentario(){
     });
 }
 
-export function useComentariosUsuario(idUser: number) { 
+export function useComentariosUsuario(userId: string) { 
     return useQuery({
-        queryKey: ['comentariosUsuario', idUser],
+        queryKey: ['comentariosUsuario', userId],
         queryFn: async () => {
-            const respuesta = await api.get(`api/v1/comentario/user/${idUser}`);
+            const respuesta = await api.get(`comentario/user/${userId}`);
             return respuesta.data;
         }
     });

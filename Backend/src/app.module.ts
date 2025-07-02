@@ -1,31 +1,52 @@
 import { Module } from '@nestjs/common';
-import { getEnvValue } from './config/config.service';
-import { TypeOrmModule
-} from '@nestjs/typeorm';
-
 import { ConfigModule } from '@nestjs/config';
-import { UserModule } from './modules/user/user.module';
-import { User } from './modules/user/entities/user.entity';
-import { AsignaturaModule } from './modules/asignatura/asignatura.module';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './modules/auth/auth.module';
-import { Asignatura } from './modules/asignatura/entities/asignatura.entity';
+import { UserModule } from './modules/user/user.module';
+import { ComentarioModule } from './modules/comentario/comentario.module';
+import { NotificacionModule } from './modules/notificacion/notificacion.module';
+import { PremioModule } from './modules/premio/premio.module';
+import { PublicacionModule } from './modules/publicacion/publicacion.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-ioredis';
+import { EtiquetaModule } from './modules/etiqueta/etiqueta.module';
+
+
+function getEnvValue(key: string): string {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`Missing env variable: ${key}`);
+  }
+  return value;
+}
+
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: getEnvValue('DATABASE_HOST'),
-      port: +getEnvValue('DATABASE_PORT'),
-      username: getEnvValue('DATABASE_USERNAME'),
-      password: getEnvValue('DATABASE_PASSWORD'),
-      database: getEnvValue('DATABASE_NAME'),
-      synchronize: true,
-      entities: [User,Asignatura], 
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: () => ({
+        store: redisStore as any,
+        host: 'localhost',
+        port: 6379,
+        ttl: 60 * 60 * 24, // la informacion del cache se guarda por 24 horas
+      }),
     }),
-    UserModule, 
-    AsignaturaModule,
-    AuthModule
-    
+    ConfigModule.forRoot({ isGlobal: true }),
+
+    MongooseModule.forRootAsync({
+      useFactory: () => ({
+        uri: `mongodb://${getEnvValue('DATABASE_USERNAME')}:${getEnvValue('DATABASE_PASSWORD')}@${getEnvValue('DATABASE_HOST')}:${getEnvValue('DATABASE_PORT')}`,
+        dbName: getEnvValue('DATABASE_NAME'),
+      }),
+    }),
+
+    UserModule,
+    AuthModule,
+    PremioModule,
+    ComentarioModule,
+    PublicacionModule,
+    NotificacionModule,
+    EtiquetaModule
   ],
   controllers: [],
   providers: [],

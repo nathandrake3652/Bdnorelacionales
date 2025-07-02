@@ -27,7 +27,7 @@ export const Login = () => {
   );
 
   const loginAnon = useAnonLogin((token) => {
-    
+    console.log(setToken(token));
     setToken(token);
     console.log(setToken(token));
     navigate('/Home');
@@ -57,9 +57,9 @@ export const Login = () => {
         <h1>Login</h1>
         <form onSubmit={submit}>
             <label>Correo: </label>
-            <input type="text" name="username" id = "username" required value = {correo}
+            <input type="email" name="correo" id = "email" required value = {correo}
               onChange = {e => setCorreo(e.target.value)}
-                   placeholder = "Ingrese su nombre de usuario."
+                   placeholder = "Ingrese su correo."
             />
             <label>Contraseña: </label>
             <input type="password" name="password" required value = {password}
