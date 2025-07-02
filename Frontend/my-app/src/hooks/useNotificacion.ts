@@ -3,7 +3,11 @@ import api from '../api/axios';
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 export function useNotificaciones(UserId: number) {
+=======
+export function useNotificaciones(userId: string) {
+>>>>>>> Stashed changes
 =======
 export function useNotificaciones(userId: string) {
 >>>>>>> Stashed changes
