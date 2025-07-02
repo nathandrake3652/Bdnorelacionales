@@ -76,7 +76,7 @@ export class AuthService {
       creadoEn: new Date().toISOString(),
     };
      await this.cacheManager.set(`anon:${anonid}`, datos, 60 * 60 * 60 ); // Guardar por 24 horas
-    const payload = { sub: anonid, type: 'anonimo' };
+    const payload = { sub: anonid, type: 'anonimo', username: username };
     const token = await this.jwtService.signAsync(payload);
 
     return {token};

@@ -38,4 +38,11 @@ export class PremioRepository {
         // Implementa la lógica para eliminar un premio por ID
         return null; // Placeholder
     }
+    async findByNombre(nombre: string): Promise<any | null> {
+        const premio = await this.premioModel.findOne({ nombre }).exec();
+        if (!premio) {
+            return null; // Si no se encuentra el premio, retorna null
+        }
+        return premio; // Placeholder
+    }
 }

@@ -19,8 +19,12 @@ export class publicacionRepository {
     async findAll(): Promise<PublicacionDocument[]> {
         return this.publicacionModel.find().exec();
     }
-    async findById(id: string): Promise<Publicacion | null> {
-        return this.publicacionModel.findById(id).exec();
+    async findById(id: string): Promise<PublicacionDocument> {
+        const publicacion = await this.publicacionModel.findById(id).exec();
+        if (!publicacion) {
+            throw new Error('Publicación no encontrada'); // Si no se encuentra la publicación, lanza un error
+        }
+        return publicacion; // Retorna la publicación encontrada
     }
     async findByAuthor(authorId: string): Promise<PublicacionDocument[]> {
         return this.publicacionModel.find({ "author.id": authorId }).exec();

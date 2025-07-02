@@ -3,7 +3,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 
 import { CreateResponse } from 'src/utils/api-response.util';
 import { ApiResponse } from 'src/interface/ApiResponse';
-import { Usuario } from './schemas/user.schema';
+import { Usuario, UsuarioDocument } from './schemas/user.schema';
 import { UsuarioRepository } from './user.repository';
 
 
@@ -31,7 +31,7 @@ export class UsuarioService {
     return CreateResponse('Usuarios obtenidos correctamente', users, 'OK');
   }
 
-  async findUsuarioByCorreo(correo: string): Promise<ApiResponse<Usuario | null>> {
+  async findUsuarioByCorreo(correo: string): Promise<ApiResponse<UsuarioDocument | null>> {
     const user = await this.usuarioRepo.findByCorreo(correo);
     //if (!user) {
       //throw new HttpException(

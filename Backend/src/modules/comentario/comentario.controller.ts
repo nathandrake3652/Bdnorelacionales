@@ -2,36 +2,24 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ComentarioService } from './comentario.service';
 import { CreateComentarioDto } from './dto/create-comentario.dto';
 import { UpdateComentarioDto } from './dto/update-comentario.dto';
+import { VotarComentarioDto } from './dto/votarcomentario.dto';
 
 @Controller('comentario')
 export class ComentarioController {
   constructor(private readonly comentarioService: ComentarioService) {}
 
-  //@Post()
-  //create(@Body() createComentarioDto: CreateComentarioDto) {
-   // return this.comentarioService.create(createComentarioDto);
-  //}
+  @Post()
+  create(@Body() createComentarioDto: CreateComentarioDto) {
+    return this.comentarioService.crearComentario(createComentarioDto);
+  }
 
-  //@Get()
-  //findAll() {
-  //  return this.comentarioService.findAll();
-  //}
-
-  //@Get(':id')
-  //findOne(@Param('id') id: string) {
-  //  return this.comentarioService.findOne(+id);
- //
- // @Patch(':id')
-  //update(@Param('id') id: string, @Body() updateComentarioDto: UpdateComentarioDto) {
-  //  return this.comentarioService.update(+id, updateComentarioDto);
- // }
-
-  //@Delete(':id')
-  //remove(@Param('id') id: string) {
-  //  return this.comentarioService.remove(+id);
-  //}
   @Get('publicacion/:id')
 async comentariosDePublicacion(@Param('id') id: string) {
   return this.comentarioService.getPorPublicacion(id);
 }
+@Patch('votar')
+votar( @Body() dto: VotarComentarioDto) {
+  return this.comentarioService.votarEnComentario(dto);
+}
+
 }

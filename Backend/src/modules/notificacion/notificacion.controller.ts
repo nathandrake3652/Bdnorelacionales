@@ -7,6 +7,11 @@ import { UpdateNotificacionDto } from './dto/update-notificacion.dto';
 export class NotificacionController {
   constructor(private readonly notificacionService: NotificacionService) {}
 
+  
+  @Get(':id')
+  findbyId(@Param('id') id: string) {
+    return this.notificacionService.findByUsuarioDestino(id);
+  }
 
 
  

@@ -5,16 +5,18 @@ import { UserModule } from '../user/user.module';
 import { PublicacionController } from './publicacion.controller';
 import { PublicacionService } from './publicacion.service';
 import { publicacionRepository } from './publicacion.repository';
-import { UsuarioRepository } from '../user/user.repository';
+import { NotificacionModule } from '../notificacion/notificacion.module';
+
 
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Publicacion.name, schema: PublicacionSchema }]),
-    UserModule // Importa el módulo de Usuario si es necesario
+    UserModule,
+    NotificacionModule // Importa el módulo de Usuario si es necesario
   ],
   controllers: [PublicacionController],
-  providers: [PublicacionService,publicacionRepository,Publicacion],
-  exports: [PublicacionService],
+  providers: [PublicacionService,publicacionRepository],
+  exports: [PublicacionService, publicacionRepository] // Exporta el servicio y repositorio si es necesario en otros módulos,
 })
 export class PublicacionModule {}
