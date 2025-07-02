@@ -21,8 +21,12 @@ export class UsuarioRepository {
     return this.usuarioModel.find().exec();
   }
 
-  async findByCorreo(correo: string): Promise<Usuario | null> {
-    return this.usuarioModel.findOne({ correo }).exec();
+  async findByCorreo(correo: string): Promise<UsuarioDocument> {
+    const user = await this.usuarioModel.findOne({ correo }).exec();
+    if (!user) {
+      throw new Error('Usuario no encontrado'); // Si no se encuentra el usuario, lanza un error
+    }
+    return user;
   }
 
   async findById(id: string): Promise<UsuarioDocument> {
