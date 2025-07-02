@@ -4,6 +4,7 @@ import { AuthController } from './auth.controller';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants/jwt.constant';
+import { CacheModule } from '@nestjs/cache-manager';
 
 
 @Module({
@@ -12,7 +13,9 @@ import { jwtConstants } from './constants/jwt.constant';
       global: true,
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '1d' }, // Token expiration time
+     
     }),
+   
   ],
    
   providers: [AuthService],

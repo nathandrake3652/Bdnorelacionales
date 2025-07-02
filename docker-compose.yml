@@ -1,19 +1,23 @@
 services:
-  db:
-    image: postgres:17
-    container_name: db  
+  mongo:
+    image: mongo:7
+    container_name: mongo
     networks:
       - backend
     environment:
-      POSTGRES_DB: dbpostgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: pass
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: pass
+      MONGO_INITDB_DATABASE: mydbmongo
     ports:
-      - "5432:5432"
+      - "27017:27017"
+    
+    command: ["mongod", "--quiet"]
+    logging:
+      driver: "none"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongo_data:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: echo 'db.runCommand("ping").ok' | mongosh mongo:27017/mydbmongo --quiet
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,28 +26,28 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: backend:latest  
-    container_name: backend
+    image: backend:latest
+    container_name: backend_mongo_redis
     ports:
-      - "3000:3000"
+      - "3001:3000"
     networks:
       - backend
     environment:
-      APP_PORT: 3000
-      DATABASE_TYPE: postgres
-      DATABASE_HOST: db
-      DATABASE_PORT: 5432
-      DATABASE_NAME: dbpostgres
-      DATABASE_USERNAME: postgres
+      APP_PORT: 3001
+      DATABASE_TYPE: mongodb
+      DATABASE_HOST: mongo
+      DATABASE_PORT: 27017
+      DATABASE_NAME: mydbmongo
+      DATABASE_USERNAME: mongo
       DATABASE_PASSWORD: pass
     depends_on:
-      db:
-        condition: service_healthy  
+      mongo:
+        condition: service_healthy
 
 networks:
   backend:
-    driver: bridge  
+    driver: bridge
 
 volumes:
   backend-node-modules: {}
-  postgres_data: {}
+  mongo_data: {}

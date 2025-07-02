@@ -10,12 +10,8 @@ export class CreateUserDto {
     message: "El nombre debe tener entre 2 y 35 caracteres.",
   })
   @IsNotEmpty({ message: "El nombre no puede estar vacío." })
-  name: string = "";
+  username: string = "";
   
-  @IsString({ message: "El RUT debe ser una cadena de texto." })
-  @IsRut({ message: "El RUT no es válido." })
-  @IsNotEmpty({ message: "El RUT no puede estar vacío." })
-  rut: string = "";
   @IsEmail()
   correo: string;
   @Transform(({ value }) => value.trim())
