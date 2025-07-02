@@ -1,0 +1,128 @@
+.profile-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #e1e8ed;
+    margin-bottom: 20px;
+}
+
+.profile-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logout-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.profile-tabs {
+    display: flex;
+    border-bottom: 1px solid #e1e8ed;
+    margin-bottom: 15px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 15px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    color: #657786;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-button.active {
+    color: #1da1f2;
+    border-bottom: 2px solid #1da1f2;
+}
+
+.tab-button:hover {
+    background-color: #f5f8fa;
+}
+
+.publicacion-card, .comentario-card {
+    padding: 15px;
+    border-bottom: 1px solid #e1e8ed;
+    transition: background-color 0.2s;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.publicacion-card:hover, .comentario-card:hover {
+    background-color: #f5f8fa;
+}
+
+.publicacion-card h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #14171a;
+}
+
+.publicacion-card p, .comentario-card p {
+    margin: 10px 0;
+    color: #14171a;
+    line-height: 1.4;
+}
+
+.post-meta, .comment-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #657786;
+    margin-top: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.delete-button {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.delete-button:hover {
+    background-color: #ff7875;
+    transform: scale(1.05);
+}
+
+@media (max-width: 600px) {
+    .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .post-meta, .comment-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .delete-button {
+        width: 100%;
+    }
+}
