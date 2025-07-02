@@ -14,8 +14,8 @@ export const PerfilUsuario = () => {
     const [activeTab, setActiveTab] = useState<'publicaciones' | 'comentarios'>('publicaciones');
 
 
-    const { data: publicaciones, refetch: refetchPublicaciones } = usePublicacionesUsuario(user?._id || '');
-    const { data: comentarios, refetch: refetchComentarios } = useComentariosUsuario(user?._id || '');
+    const { data: publicaciones, refetch: refetchPublicaciones } = usePublicacionesUsuario(user._id);
+    const { data: comentarios, refetch: refetchComentarios } = useComentariosUsuario(user._id);
 
     const { mutate: eliminarPublicacion } = useEliminarPublicacion();
     const { mutate: eliminarComentario } = useEliminarComentario();
