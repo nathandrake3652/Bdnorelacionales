@@ -38,9 +38,9 @@ export class AuthService {
   }
 
   async register({ username, correo, password }: RegistroDto) {
-    const result = await this.usuarioService.findUsuarioByCorreo(correo);
+    const result = await this.usuarioService.findtoregister(correo);
 
-    if (result.data) {
+    if (result) {
       throw new BadRequestException('El usuario ya existe');
     }
 
