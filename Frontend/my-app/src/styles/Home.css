@@ -537,3 +537,23 @@
     text-align: center;
     font-weight: bold;
 }
+
+.search-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.confirm-search-btn {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.confirm-search-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}

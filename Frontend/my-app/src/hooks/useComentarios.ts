@@ -13,7 +13,7 @@ export function useCrearComentario(){
     const clienteQuery = useQueryClient();
     return useMutation({
         mutationFn: async ({content, authorId, publicacionId, tipo}:ComentarioData)  => {
-            const respuesta = await api.post('api/v1/comentario',{content, authorId, publicacionId, tipo});
+            const respuesta = await api.post('comentario',{content, authorId, publicacionId, tipo});
             return respuesta.data
         },
         onSuccess: (_, variables) => {
@@ -27,8 +27,8 @@ export function useCrearComentario(){
 export function useVotarComentario() {
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (voteData: {userId: string, valor: number, comentarioId: string}) => {
-            const respuesta = await api.patch('api/v1/comentario/votar', voteData);
+        mutationFn: async (voteData: {userId: string, score: number, comentarioId: string}) => {
+            const respuesta = await api.patch('comentario/votar', voteData);
             return respuesta.data;
         },
         onSuccess: () => {
@@ -41,7 +41,7 @@ export function useComentarios(publicacionId: string, filtro: string) {
     return useQuery({
         queryKey: ['comentarios', publicacionId, filtro],
         queryFn: async () => {
-            const respuesta = await api.get(`api/v1/comentario/${filtro}/${publicacionId}`);
+            const respuesta = await api.get(`comentario/${filtro}/${publicacionId}`);
             return respuesta.data;
         }
     });
@@ -51,7 +51,7 @@ export function useEliminarComentario(){
     const clienteQuery = useQueryClient();
     return useMutation({
         mutationFn: async (comentarioId: string)  => {
-            const respuesta = await api.patch(`api/v1/comentario/${comentarioId}`);
+            const respuesta = await api.patch(`comentario/${comentarioId}`);
             return respuesta.data
         },
         onSuccess: () => {
@@ -64,7 +64,7 @@ export function useComentariosUsuario(userId: string) {
     return useQuery({
         queryKey: ['comentariosUsuario', userId],
         queryFn: async () => {
-            const respuesta = await api.get(`api/v1/comentario/user/${userId}`);
+            const respuesta = await api.get(`comentario/user/${userId}`);
             return respuesta.data;
         }
     });
