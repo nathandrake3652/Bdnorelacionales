@@ -8,12 +8,15 @@ import { UsuarioDocument } from '../user/schemas/user.schema';
 import { Types } from 'mongoose';
 import { VotarDto } from './dto/votar.dto';
 import { NotificacionService } from '../notificacion/notificacion.service';
+import { AsignarPremioDto } from './dto/asignar-premio.dto';
+import { PremioRepository } from '../premio/premio.repository';
 
 @Injectable()
 export class PublicacionService {
   constructor(private readonly publirepo: publicacionRepository,
     private readonly userRepo: UsuarioRepository,
     private readonly noti: NotificacionService, // Asegúrate de importar el servicio de notificaciones
+    private readonly premioRepository: PremioRepository, // Asegúrate de importar el repositorio de premios
     
     
   ) {}
@@ -44,7 +47,7 @@ export class PublicacionService {
   async findAll() {
   const publicaciones = await this.publirepo.findAll();
   if (!publicaciones || publicaciones.length === 0) {
-    throw new Error('No se encontraron publicaciones');
+    return []; // Retorna un array vacío si no hay publicaciones
   }
     return publicaciones.map(pub => ({
     _id: pub._id as Types.ObjectId,
@@ -201,6 +204,43 @@ async getPorEtiquetaYFiltro(etiqueta: string, filtro: string) {
     ...p.toObject?.() ?? p,
     score: p.votos.reduce((acc, v) => acc + v.valor, 0),
   }));
+}
+
+async asignarPremio(dto: AsignarPremioDto) {
+  const { publicacionId, nombrePremio, usuarioId } = dto;
+
+  const publicacion = await this.publirepo.findById(publicacionId);
+  if (!publicacion) throw new Error('Publicación no encontrada');
+
+  const premio = await this.premioRepository.findByNombre(nombrePremio);
+  if (!premio) throw new Error('Premio no válido');
+
+  const premioExistente = publicacion.premios.find(p => p.id.toString() === premio._id.toString());
+
+  if (premioExistente) {
+    premioExistente.numero += 1;
+  } else {
+    publicacion.premios.push({
+      id: premio._id,
+      numero: 1,
+    });
+  }
+
+  await publicacion.save();
+
+  const usuario = await this.userRepo.findById(usuarioId);
+  if (!usuario) throw new Error('Usuario no encontrado');
+  const userid = usuario.id
+
+  await this.noti.crearNotificacion({
+    usuarioDestinoId: publicacion.author.id.toString(),
+    origenUsuarioId: userid,
+    origenUsername: usuario.username,
+    tipo: 'premio',
+    postId: dto.publicacionId,
+  });
+
+  return publicacion;
 }
 
 
