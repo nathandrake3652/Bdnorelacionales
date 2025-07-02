@@ -14,8 +14,8 @@ export const PerfilUsuario = () => {
     const [activeTab, setActiveTab] = useState<'publicaciones' | 'comentarios'>('publicaciones');
 
 
-    const { data: publicaciones, refetch: refetchPublicaciones } = usePublicacionesUsuario(user?.id || '');
-    const { data: comentarios, refetch: refetchComentarios } = useComentariosUsuario(user?.id || '');
+    const { data: publicaciones, refetch: refetchPublicaciones } = usePublicacionesUsuario(user?._id || '');
+    const { data: comentarios, refetch: refetchComentarios } = useComentariosUsuario(user?._id || '');
 
     const { mutate: eliminarPublicacion } = useEliminarPublicacion();
     const { mutate: eliminarComentario } = useEliminarComentario();
@@ -40,9 +40,9 @@ export const PerfilUsuario = () => {
         navigate('/Login');
     }
 
-    const handleEliminarPublicacion = (id: string) => {
+    const handleEliminarPublicacion = (_id: string) => {
         if (window.confirm('¿Estás seguro de eliminar esta publicación?')) {
-            eliminarPublicacion(id, {
+            eliminarPublicacion(_id, {
                 onSuccess: () => {
                     refetchPublicaciones();
                 }
@@ -50,9 +50,9 @@ export const PerfilUsuario = () => {
         }
     };
 
-    const handleEliminarComentario = (id: string) => {
+    const handleEliminarComentario = (_id: string) => {
         if (window.confirm('¿Estás seguro de eliminar este comentario?')) {
-            eliminarComentario(id, {
+            eliminarComentario(_id, {
                 onSuccess: () => {
                     refetchComentarios();
                 }
@@ -99,15 +99,15 @@ export const PerfilUsuario = () => {
                             [...publicaciones]
                                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                                 .map(publicacion => (
-                                <div key={publicacion.id} className="publicacion-card">
+                                <div key={publicacion._id} className="publicacion-card">
                                     <h3>{publicacion.title}</h3>
                                     <p>{publicacion.content}</p>
                                     <div className="post-meta">
-                                        <span>Likes: {publicacion.score}</span>
+                                        <span>Likes: {publicacion.votos?.reduce((sum: any, voto: any) => sum + voto.valor, 0) || 0}</span>
                                         <span>{new Date(publicacion.createdAt).toLocaleDateString()}</span>
                                         <button 
                                             className="delete-button"
-                                            onClick={() => handleEliminarPublicacion(publicacion.id)}
+                                            onClick={() => handleEliminarPublicacion(publicacion._id)}
                                         >
                                             Eliminar
                                         </button>
@@ -124,15 +124,15 @@ export const PerfilUsuario = () => {
                             [...comentarios]
                                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                                 .map(comentario => (
-                                <div key={comentario.id} className="comentario-card">
+                                <div key={comentario._id} className="comentario-card">
                                     <p>{comentario.content}</p>
                                     <div className="comment-meta">
                                         <span>En: {comentario.publicacionTitle || 'Publicación eliminada'}</span>
-                                        <span>Likes: {comentario.score}</span>
+                                        <span>Likes: {comentario.votos?.reduce((sum :any, voto : any) => sum + voto.valor, 0) || 0}</span>
                                         <span>{new Date(comentario.createdAt).toLocaleDateString()}</span>
                                         <button 
                                             className="delete-button"
-                                            onClick={() => handleEliminarComentario(comentario.id)}
+                                            onClick={() => handleEliminarComentario(comentario._id)}
                                         >
                                             Eliminar
                                         </button>

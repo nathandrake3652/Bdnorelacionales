@@ -8,7 +8,7 @@ export const Notificaciones = () => {
     const {token, setToken} = useAuth();
     const navigate = useNavigate();
     const { data: user, isLoading: cargauser, isError} = useUserProfile();
-    const {data: Notis, isLoading: cargaNotis} = useNotificaciones(user.rut);
+    const {data: Notis, isLoading: cargaNotis} = useNotificaciones(user._id);
 
     if(!token)
     {
@@ -47,8 +47,8 @@ export const Notificaciones = () => {
                 {Notis?.length > 0 ? (
                     <ul>
                         {Notis.map((noti: any) => (
-                            <li key = {noti.id}> 
-                                <span>{user.nombre}, {noti.mensaje}</span>
+                            <li key = {noti._id}> 
+                                <span>{user.username}, {noti.mensaje}</span>
                                  <p>------------</p>
                             </li>
                         ))}
