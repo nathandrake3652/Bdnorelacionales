@@ -6,7 +6,7 @@ import { PremioRepository } from './premio.repository';
 @Injectable()
 export class PremioService {
   constructor(
-     private readonly premioRepository: PremioRepository, // Uncomment if you have a repository
+     private readonly premioRepository: PremioRepository, 
   ) {}
   create(createPremioDto: CreatePremioDto) {
     return this.premioRepository.create(createPremioDto);

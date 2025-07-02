@@ -6,6 +6,7 @@ import { ComentarioRepository } from './comentario.repository';
 import { ComentarioService } from './comentario.service';
 import { Comentario, ComentarioSchema } from './schemas/comentario.schema';
 import { UserModule } from '../user/user.module';
+import { UsuarioRepository } from '../user/user.repository';
 
 
 @Module({

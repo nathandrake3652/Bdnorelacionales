@@ -11,6 +11,6 @@ import { UsuarioRepository } from './user.repository';
   ],
   controllers: [UserController],
   providers: [UsuarioService,UsuarioRepository],
-  exports: [UsuarioService],
+  exports: [UsuarioService, UsuarioRepository],
 })
 export class UserModule {}

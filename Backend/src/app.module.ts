@@ -9,6 +9,7 @@ import { PremioModule } from './modules/premio/premio.module';
 import { PublicacionModule } from './modules/publicacion/publicacion.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
+import { EtiquetaModule } from './modules/etiqueta/etiqueta.module';
 
 
 function getEnvValue(key: string): string {
@@ -45,6 +46,7 @@ function getEnvValue(key: string): string {
     ComentarioModule,
     PublicacionModule,
     NotificacionModule,
+    EtiquetaModule
   ],
   controllers: [],
   providers: [],

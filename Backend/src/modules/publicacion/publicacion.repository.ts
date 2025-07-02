@@ -1,12 +1,13 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Publicacion, PublicacionDocument } from "./schemas/publicacion.schema";
 import { Model, Types } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
 
 @Injectable()
 export class publicacionRepository {
 
     constructor(
-        @Inject(Publicacion.name) // Asegúrate de que este token esté definido en tu módulo
+        @InjectModel(Publicacion.name) 
         private readonly publicacionModel: Model<Publicacion>
     ) {
         
