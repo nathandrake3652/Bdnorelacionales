@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { PublicacionService } from './publicacion.service';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
+import { VotarDto } from './dto/votar.dto';
 
 @Controller('publicacion')
 export class PublicacionController {
@@ -46,6 +47,10 @@ async publicacionesPorEtiquetaYFiltro(
 ) {
   return this.publicacionService.getPorEtiquetaYFiltro(etiqueta, filtro);
 }
+@Patch('votar')
+async votarPublicacion(@Body() votarDto: VotarDto) {
+  return this.publicacionService.votar(votarDto);
 
 
+}
 }
