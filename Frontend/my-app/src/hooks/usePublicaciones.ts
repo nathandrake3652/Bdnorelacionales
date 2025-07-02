@@ -24,7 +24,7 @@ export function useCrearPublicacion(){ //listo
 export function useVotarPublicacion(){ //listo
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (Rate:{idVotador: string, score: number, idPublicacion: string})  => {
+        mutationFn: async (Rate:{userId: string, valor: number, publicacionId: string})  => {
             const respuesta = await api.patch('api/v1/publicaciones',Rate);
             return respuesta.data
         },
@@ -38,7 +38,7 @@ export function useVotarPublicacion(){ //listo
 export function useDarPremio(){ // listo
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (premioData:{idPremiador: string, idPublicacion: string, idPremio: string})  => {
+        mutationFn: async (premioData:{userId: string, premioId: string, publicacionId: string})  => {
             const respuesta = await api.patch('api/v1/publicaciones', premioData);
             return respuesta.data
         },

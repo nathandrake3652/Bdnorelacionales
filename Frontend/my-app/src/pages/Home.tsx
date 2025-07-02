@@ -106,7 +106,7 @@ export const Home = () => {
         crearPublicacion({
             title: titulo,
             content: contenido,
-            authorId: user.id, 
+            authorId: user._id, 
             tags: tagsArray
         });
 
@@ -117,7 +117,7 @@ export const Home = () => {
     };
 
     const handleVote = (publicacionId: string, newVoteValue: number) => {
-        if (user.type === 'anonimo') return;
+        if (user.type === 'anon') return;
         
         const currentVote = userVotes[publicacionId] || 0;
         let scoreChange = 0;
@@ -141,9 +141,9 @@ export const Home = () => {
         }));
         
         votarPublicacion({
-            idVotador: user.id,
-            score: scoreChange,
-            idPublicacion: publicacionId
+            userId: user._id,    // Antes: idVotador
+            valor: scoreChange,  // Antes: score
+            publicacionId: publicacionId
         });
     };
 
@@ -151,9 +151,9 @@ export const Home = () => {
         if (!publicacionSeleccionada || !user) return;
         
         darPremio({
-            idPremiador: user.id,
-            idPublicacion: publicacionSeleccionada,
-            idPremio: idPremio
+            userId: user._id,      // Antes: idPremiador
+            premioId: idPremio,    // Antes: idPremio
+            publicacionId: publicacionSeleccionada
         });
         
         setMostrarPremiosModal(false);
@@ -174,13 +174,13 @@ export const Home = () => {
     const Comentario = ({ comentario, profundidad = 0 }: { comentario: any, profundidad?: number }) => {
         const { mutate: votarComentario } = useVotarComentario();
         const [mostrarRespuestas, setMostrarRespuestas] = useState(false);
-        const { data: respuestas } = useComentarios(comentario.id, 'comentario');
+        const { data: respuestas } = useComentarios(comentario._id, 'comentario');
     
         // Estado para manejar los votos
         const [userVotes, setUserVotes] = useState<Record<string, number>>({});
 
             const handleVoteComentario = (comentarioId: string, newVoteValue: number) => {
-                    if (user.type === 'anonimo') return;
+                    if (user.type === 'anon') return;
                     
                     const currentVote = userVotes[comentarioId] || 0;
                     let scoreChange = 0;
@@ -200,37 +200,37 @@ export const Home = () => {
                     }));
                     
                     votarComentario({
-                        idVotador: user.id,
-                        score: scoreChange,
-                        idComentario: comentarioId
+                        userId: user._id,    // Antes: idVotador
+                        valor: scoreChange,  // Antes: score
+                        comentarioId: comentarioId
                     });
                 };
 
             return (
                 <div className="comentario" style={{ marginLeft: `${profundidad * 20}px` }}>
                     <div className="comentario-header">
-                        <span>{comentario.author}</span>
+                        <span>{comentario.author.username}</span>
                         <div className="comentario-votos">
                             <button 
-                                onClick={() => handleVoteComentario(comentario.id, 1)}
-                                className={userVotes[comentario.id] === 1 ? 'active' : ''}
-                                disabled={user.type === 'anonimo'}
+                                onClick={() => handleVoteComentario(comentario._id, 1)}
+                                className={userVotes[comentario._id] === 1 ? 'active' : ''}
+                                disabled={user.type === 'anon'}
                             >↑</button>
-                            <span>{comentario.score}</span>
+                            <span>{comentario.votos?.reduce((sum: any, voto: any) => sum + voto.valor, 0) || 0}</span>
                             <button 
-                                onClick={() => handleVoteComentario(comentario.id, -1)}
-                                className={userVotes[comentario.id] === -1 ? 'active' : ''}
-                                disabled={user.type === 'anonimo'}
+                                onClick={() => handleVoteComentario(comentario._id, -1)}
+                                className={userVotes[comentario._id] === -1 ? 'active' : ''}
+                                disabled={user.type === 'anon'}
                             >↓</button>
                         </div>
                     </div>
                     <p className="comentario-content">{comentario.content}</p>
                     
                     <div className="comentario-actions">
-                        {user.type !== 'anonimo' && (
+                        {user.type !== 'anon' && (
                             <button 
                                 onClick={() => setComentarioEditando({
-                                    publicacionId: comentario.id,
+                                    publicacionId: comentario._id,
                                     tipo: 'comentario',
                                     content: ''
                                 })}
@@ -262,7 +262,7 @@ export const Home = () => {
             
             crearComentario({
                 content: comentarioEditando.content,
-                authorId: user.id,
+                authorId: user._id,
                 publicacionId: comentarioEditando.publicacionId,
                 tipo: comentarioEditando.tipo
             });
@@ -280,7 +280,7 @@ export const Home = () => {
         return (
             <div className="comentarios-list">
                 {comentarios?.map((comentario: any) => (
-                    <Comentario key={comentario.id} comentario={comentario} />
+                    <Comentario key={comentario._id} comentario={comentario} />
                 ))}
             </div>
         );
@@ -289,7 +289,7 @@ export const Home = () => {
     return (
         <div className="home-container">
             <div className="header">
-                {user.type === 'anonimo' ? (
+                {user.type === 'anon' ? (
                     <h2>Estás navegando como usuario anónimo</h2>
                 ) : (
                     <div className="user-info">
@@ -308,7 +308,7 @@ export const Home = () => {
                 )}
             </div>
 
-            {user.type !== 'anonimo' && (
+            {user.type !== 'anon' && (
                 <button 
                     onClick={() => setMostrarModal(true)}
                     className="create-post-btn"
@@ -425,9 +425,9 @@ export const Home = () => {
             </div>
             <div className="posts-list">
                 {publicaciones?.map((publicacion: any) => (
-                <div key={publicacion.id} className="post" style={{ position: 'relative' }}>
+                <div key={publicacion._id} className="post" style={{ position: 'relative' }}>
                     <div className="post-header">
-                        <span className="post-author">{publicacion.author}</span>
+                        <span className="post-author">{publicacion.author.username}</span>
                         <div>
                             {publicacion.tags?.map((tag: string) => (
                             <span 
@@ -458,21 +458,21 @@ export const Home = () => {
                         marginTop: '15px'
                     }}>
                         
-                        {user.type !== 'anonimo' ? (
+                        {user.type !== 'anon' ? (
                         <div className="voting-buttons">
                             <button
-                            onClick={() => handleVote(publicacion.id, 1)}
-                            className={`vote-btn upvote ${userVotes[publicacion.id] === 1 ? 'active' : ''}`}
+                            onClick={() => handleVote(publicacion._id, 1)}
+                            className={`vote-btn upvote ${userVotes[publicacion._id] === 1 ? 'active' : ''}`}
                             disabled={cargandoPublicaciones}
                             >
                             ↑
                             </button>
                             
-                            <span className="score">{publicacion.score}</span>
+                            <span className="score">{publicacion.votos?.reduce((sum: any, voto: any) => sum + voto.valor, 0) || 0}</span>
                             
                             <button
-                            onClick={() => handleVote(publicacion.id, -1)}
-                            className={`vote-btn downvote ${userVotes[publicacion.id] === -1 ? 'active' : ''}`}
+                            onClick={() => handleVote(publicacion._id, -1)}
+                            className={`vote-btn downvote ${userVotes[publicacion._id] === -1 ? 'active' : ''}`}
                             disabled={cargandoPublicaciones}
                             >
                             ↓
@@ -483,11 +483,11 @@ export const Home = () => {
                         )}
                         
                         
-                        {user.type !== 'anonimo' && (
+                        {user.type !== 'anon' && (
                         <div className="premio-badge">
                             <button 
                             onClick={() => {
-                                setPublicacionSeleccionada(publicacion.id);
+                                setPublicacionSeleccionada(publicacion._id);
                                 setMostrarPremiosModal(true);
                             }}
                             className="premio-btn"
@@ -508,16 +508,16 @@ export const Home = () => {
                             <button 
                                 onClick={() => setComentariosAbiertos(prev => ({
                                     ...prev,
-                                    [publicacion.id]: !prev[publicacion.id]
+                                    [publicacion._id]: !prev[publicacion._id]
                                 }))}
                             >
-                                {(comentariosAbiertos[publicacion.id] ?? false) ? 'Ocultar comentarios' : 'Ver comentarios'}
+                                {(comentariosAbiertos[publicacion._id] ?? false) ? 'Ocultar comentarios' : 'Ver comentarios'}
                             </button>
 
-                            {user.type !== 'anonimo' && (
+                            {user.type !== 'anon' && (
                                 <button 
                                     onClick={() => setComentarioEditando({
-                                        publicacionId: publicacion.id, // ID de la publicación
+                                        publicacionId: publicacion._id, // ID de la publicación
                                         tipo: 'publicacion',
                                         content: ''
                                     })}
@@ -527,11 +527,11 @@ export const Home = () => {
                             )}
                         </div>
 
-                        {comentariosAbiertos[publicacion.id] && (
-                            <ComentariosList publicacionId={publicacion.id} />
+                        {comentariosAbiertos[publicacion._id] && (
+                            <ComentariosList publicacionId={publicacion._id} />
                         )}
 
-                        {comentarioEditando.publicacionId === publicacion.id && (
+                        {comentarioEditando.publicacionId === publicacion._id && (
                             <div className="comentario-form">
                                 <textarea
                                     value={comentarioEditando.content}
@@ -574,22 +574,22 @@ export const Home = () => {
                 <div className="premios-grid">
                     {premios?.map((premio: any, index: number) => {
                     const emojis = ['💡', '😂', '🔥', '😡'];
-                    const yaPremiada = (publicaciones as Array<{id: string, premios?: Array<{idPremiador: string, id: string}>}> | undefined)
-                        ?.find(p => p.id === publicacionSeleccionada)
+                    const yaPremiada = publicaciones
+                        ?.find((p: any) => p._id === publicacionSeleccionada)
                         ?.premios
-                        ?.some((p: {idPremiador: string, id: string}) => p.idPremiador === user?.id && p.id === premio.id);
+                        ?.some((p: any) => p.userId === user?._id && p.premioId === premio._id);
                     
                         return (
                             <button
-                            key={premio.id}
-                            onClick={() => handleSeleccionarPremio(premio.id)}
+                            key={premio._id}
+                            onClick={() => handleSeleccionarPremio(premio._id)}
                             className="premio-option"
                             style={{
                                 backgroundColor: yaPremiada ? '#e0e0e0' : 'transparent'
                             }}
                             >
                             <span className="premio-emoji">{emojis[index]}</span>
-                            <span>{premio.nombre}</span>
+                            <span>{premio.name}</span>
                             {yaPremiada && <span>(Ya premiado)</span>}
                             </button>
                     );

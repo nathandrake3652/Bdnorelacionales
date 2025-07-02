@@ -27,7 +27,7 @@ export function useCrearComentario(){
 export function useVotarComentario() {
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (voteData: {idVotador: string, score: number, idComentario: string}) => {
+        mutationFn: async (voteData: {userId: string, valor: number, comentarioId: string}) => {
             const respuesta = await api.patch('api/v1/comentario/votar', voteData);
             return respuesta.data;
         },
@@ -50,8 +50,8 @@ export function useComentarios(publicacionId: string, filtro: string) {
 export function useEliminarComentario(){ 
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (idComentario: string)  => {
-            const respuesta = await api.patch(`api/v1/comentario/${idComentario}`);
+        mutationFn: async (comentarioId: string)  => {
+            const respuesta = await api.patch(`api/v1/comentario/${comentarioId}`);
             return respuesta.data
         },
         onSuccess: () => {
@@ -60,11 +60,11 @@ export function useEliminarComentario(){
     });
 }
 
-export function useComentariosUsuario(idUser: string) { 
+export function useComentariosUsuario(userId: string) { 
     return useQuery({
-        queryKey: ['comentariosUsuario', idUser],
+        queryKey: ['comentariosUsuario', userId],
         queryFn: async () => {
-            const respuesta = await api.get(`api/v1/comentario/user/${idUser}`);
+            const respuesta = await api.get(`api/v1/comentario/user/${userId}`);
             return respuesta.data;
         }
     });
