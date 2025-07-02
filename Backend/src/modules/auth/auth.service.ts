@@ -30,7 +30,7 @@ export class AuthService {
       throw new BadRequestException('Credenciales inválidas');
     }
 
-    const payload = { correo: user.correo, username: user.username };
+    const payload = { correo: user.correo, username: user.username, id: user._id };
     const token = await this.jwtService.signAsync(payload);
 
     return {
@@ -75,7 +75,7 @@ export class AuthService {
       type: 'anonimo',
       creadoEn: new Date().toISOString(),
     };
-     await this.cacheManager.set(`anon:${anonid}`, datos, 60 * 60 * 60 ); // Guardar por 24 horas
+     await this.cacheManager.set(`anon:${anonid}`, datos, 60 * 60 * 60 ); 
     const payload = { sub: anonid, type: 'anonimo', username: username };
     const token = await this.jwtService.signAsync(payload);
 

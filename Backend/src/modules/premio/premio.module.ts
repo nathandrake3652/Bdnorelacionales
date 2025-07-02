@@ -9,5 +9,6 @@ import { PremioRepository } from './premio.repository';
   imports: [MongooseModule.forFeature([{ name: Premio.name, schema: PremioSchema }])],
   providers: [PremioService,PremioRepository],
   controllers: [PremioController],
+  exports: [PremioService, PremioRepository] // Exportamos el servicio y el repositorio para que puedan ser utilizados en otros módulos
 })
 export class PremioModule {}

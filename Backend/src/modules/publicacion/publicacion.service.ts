@@ -8,8 +8,9 @@ import { UsuarioDocument } from '../user/schemas/user.schema';
 import { Types } from 'mongoose';
 import { VotarDto } from './dto/votar.dto';
 import { NotificacionService } from '../notificacion/notificacion.service';
-import { AsignarPremioDto } from './dto/asignar-premio.dto';
+
 import { PremioRepository } from '../premio/premio.repository';
+import { AsignarPremioDto } from './dto/asignar-premio.dto';
 
 @Injectable()
 export class PublicacionService {
