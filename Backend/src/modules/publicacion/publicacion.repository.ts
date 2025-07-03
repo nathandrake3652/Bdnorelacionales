@@ -43,8 +43,12 @@ export class publicacionRepository {
     { new: true },
   ).exec();
 }
-async findByEtiqueta(etiqueta: string): Promise<PublicacionDocument[]> {
-  return this.publicacionModel.find({ tags: etiqueta }).exec();
+async findByEtiqueta(etiqueta: string): Promise<Publicacion[]> {
+  return this.publicacionModel
+    .find({ tags: etiqueta })
+    .populate('author.id', 'username') // opcional
+    .lean() // si prefieres objetos planos
+    .exec();
 }
 async deleteById(id: string): Promise<PublicacionDocument | null> {
     return this.publicacionModel.findByIdAndDelete(id).exec();

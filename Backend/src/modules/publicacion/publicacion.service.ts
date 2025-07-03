@@ -66,7 +66,7 @@ export class PublicacionService {
     tags: pub.tags,
     createdAt: pub.createdAt,
     premios: pub.premios,
-    score: pub.votos.reduce((total, voto) => total + voto.valor, 0), // 💡 suma de votos
+    score: pub.votos.reduce((total, voto) => total + voto.valor, 0), 
   }));
   }
 

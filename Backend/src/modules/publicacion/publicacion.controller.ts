@@ -43,7 +43,7 @@ async publicacionesDeUsuario(@Param('id') id: string) {
 @Get('filtroetiqueta/:etiqueta/:filtro')
 async publicacionesPorEtiquetaYFiltro(
   @Param('etiqueta') etiqueta: string,
-  @Param('filtro') filtro: string,
+  @Param('filtro') filtro: 'populares' | 'Más recientes' | 'Sin filtro',
 ) {
   return this.publicacionService.getPorEtiquetaYFiltro(etiqueta, filtro);
 }
