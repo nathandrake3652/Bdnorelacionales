@@ -4,6 +4,7 @@ import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
 import { VotarDto } from './dto/votar.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/config/multer.config';
 
 @Controller('publicacion')
 export class PublicacionController {
@@ -14,7 +15,7 @@ export class PublicacionController {
     FileFieldsInterceptor([
     {name: 'imagenes',maxCount: 5},
     {name: 'videoUrl',maxCount: 1},
-  ])
+  ], multerConfig)
 )
  async  crearPublicacion(
   @UploadedFiles() files: { imagenes?: Express.Multer.File[], videoUrl?: Express.Multer.File[] },
