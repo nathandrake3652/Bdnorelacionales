@@ -8,8 +8,7 @@ export class Premio {
   @Prop({ required: true })
   name: string;
 
-  @Prop()
-  image: string;
+  
 
   @Prop({ required: true })
   coste: number;
