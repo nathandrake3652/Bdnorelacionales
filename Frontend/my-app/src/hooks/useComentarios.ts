@@ -29,27 +29,48 @@ export function useVotarComentario() {
     return useMutation({
         mutationFn: async (voteData: {comentarioId: string, idVotador: string, score: number}) => {
             const respuesta = await api.patch('comentario/votar', voteData);
-            console.log(respuesta.data);
             return respuesta.data;
         },
-        onSuccess: (nuevoScore, variables) => {
+        onSuccess: (_, variables) => {
+            // Invalida todas las queries de comentarios
             clienteQuery.invalidateQueries({queryKey: ['comentarios']});
+            
+            // Actualización optimista
+            clienteQuery.setQueriesData(
+                {queryKey: ['comentarios']},
+                (oldData: any) => {
+                    return oldData?.map((com: any) => {
+                        if (com._id === variables.comentarioId) {
+                            return {
+                                ...com,
+                                score: com.score + variables.score
+                            };
+                        }
+                        return com;
+                    });
+                }
+            );
         }
     });
 }
 
-export function useComentarios(publicacionId: string, filtro: string) {
+export function useComentarios(publicacionId: string, tipo: string) {
     return useQuery({
-        queryKey: ['comentarios', publicacionId, filtro],
+        queryKey: ['comentarios', publicacionId, tipo],
         queryFn: async () => {
             const respuesta = await api.get(`/comentario`, { 
-        params: {  
-          publicacionId,
-          filtro
-        }
-      });
-            console.log("comentario: ",respuesta.data);
+                params: {  
+                    publicacionId,
+                    filtro: tipo
+                }
+            });
             return respuesta.data;
+        },
+        select: (data) => {
+            return data.map((com: any) => ({
+                ...com,
+                score: com.score || 0 // Asegura que siempre haya un score
+            }));
         }
     });
 }

@@ -127,9 +127,7 @@ export const PerfilUsuario = () => {
                                 <div key={comentario._id} className="comentario-card">
                                     <p>{comentario.content}</p>
                                     <div className="comment-meta">
-                                        <span>En: {comentario.publicacionTitle || 'Publicación eliminada'}</span>
-                                        <span>Likes: {comentario.votos?.reduce((sum :any, voto : any) => sum + voto.score, 0) || 0}</span>
-                                        <span>{new Date(comentario.createdAt).toLocaleDateString()}</span>
+                                        
                                         <button 
                                             className="delete-button"
                                             onClick={() => handleEliminarComentario(comentario._id)}

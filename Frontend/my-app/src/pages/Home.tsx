@@ -25,7 +25,7 @@ export const Home = () => {
     const navigate = useNavigate();
     const { data: user, isLoading: cargauser, isError } = useUserProfile();
     const [filtro, setFiltro] = useState("Sin filtro");
-
+    
     //estados para premios
     const [mostrarPremiosModal, setMostrarPremiosModal] = useState(false);
     const [publicacionSeleccionada, setPublicacionSeleccionada] = useState<string | null>(null);
@@ -35,6 +35,8 @@ export const Home = () => {
     const [titulo, setTitulo] = useState("");
     const [contenido, setContenido] = useState("");
     const [tags, setTags] = useState("");
+    const [imagenes, setImagenes] = useState<File[]>([]);
+    const [videoUrl, setVideoUrl] = useState("");
 
     // Busqueda con etiquetas
     const [busquedaEtiqueta, setBusquedaEtiqueta] = useState("");
@@ -61,7 +63,7 @@ export const Home = () => {
     busquedaActiva && etiquetaLimpia ? filtro : 'Sin filtro'
     );
 
-    const publicaciones = busquedaActiva ? publicacionesFiltradas : publicacionesNormales;
+    const publicaciones = busquedaActiva ? publicacionesFiltradas : publicacionesFiltradas;
 
 
     const { data: etiquetas } = useEtiquetas();
@@ -183,7 +185,7 @@ export const Home = () => {
         user, 
         setComentarioEditando 
     }: ComentarioProps) => {
-        const [mostrarRespuestas, setMostrarRespuestas] = useState(false);
+        const [mostrarRespuestas] = useState(false);
         const { data: respuestas } = useComentarios(comentario._id, 'comentario');
         
         return (
@@ -225,7 +227,7 @@ export const Home = () => {
                             <button 
                                 onClick={() => setComentarioEditando({
                                     publicacionId: null,
-                                    tipo: 'publicacion',
+                                    tipo: 'comentario',
                                     content: ''
                                 })}
                             >
@@ -342,6 +344,35 @@ export const Home = () => {
                                 onChange={(e) => setContenido(e.target.value)}
                             />
                         </div>
+
+                        <div className="modal-field">
+                            <label>Imágenes:</label>
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={(e) => {
+                                    if (e.target.files) {
+                                        setImagenes(Array.from(e.target.files));
+                                    }
+                                }}
+                            />
+                            {imagenes.length > 0 && (
+                                <div>
+                                    <p>Imágenes seleccionadas: {imagenes.length}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="modal-field">
+                            <label>Enlace de video (YouTube, Vimeo, etc.):</label>
+                            <input
+                                type="text"
+                                value={videoUrl}
+                                onChange={(e) => setVideoUrl(e.target.value)}
+                                placeholder="https://www.youtube.com/watch?v=..."
+                            />
+                        </div>
                         
                         <div className="modal-field">
                             <label>Tags (separados por espacios, ej: #tag1 #tag2):</label>
@@ -354,8 +385,11 @@ export const Home = () => {
                         
                         <div className="modal-actions">
                             <button 
-                                onClick={() => setMostrarModal(false)}
-                                className="cancel-btn"
+                                onClick={() => {
+                                    setMostrarModal(false);
+                                    setImagenes([]);
+                                    setVideoUrl("");
+                                }}
                             >
                                 Cancelar
                             </button>
@@ -440,7 +474,7 @@ export const Home = () => {
       
                 
                     <h3 className="post-title">{publicacion.title}</h3>
-                    <p className="post-content">{publicacion.media}</p>
+                    <p className="post-content">{publicacion.media.content}</p>
 
                     
                     <div style={{ 
@@ -453,20 +487,21 @@ export const Home = () => {
                         {user.type !== 'anonimo' ? (
                         <div className="voting-buttons">
                             <button
-                            onClick={() => handleVote(publicacion._id, 1)}
-                            className={`vote-btn upvote ${userVotes[publicacion._id] === 1 ? 'active' : ''}`}
+                                onClick={() => handleVote(publicacion._id, 1)}
+                                className={`vote-btn upvote ${userVotes[publicacion._id] === 1 ? 'active' : ''}`}
+                                disabled={userVotes[publicacion._id] === -1} 
                             >
-                            ↑
+                                ↑
                             </button>
-                            
+
                             <span className="score">{publicacion.score}</span>
-                            
+
                             <button
-                            
-                            onClick={() => handleVote(publicacion._id, -1)}
-                            className={`vote-btn downvote ${userVotes[publicacion._id] === -1 ? 'active' : ''}`}
+                                onClick={() => handleVote(publicacion._id, -1)}
+                                className={`vote-btn downvote ${userVotes[publicacion._id] === -1 ? 'active' : ''}`}
+                                disabled={userVotes[publicacion._id] === 1}
                             >
-                            ↓
+                                ↓
                             </button>
                         </div>
                         ) : (
