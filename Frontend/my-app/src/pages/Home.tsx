@@ -354,6 +354,7 @@ export const Home = () => {
                                 </div>
                             );
                         }
+                        
                         return (
                             <div key={index} className="media-item">
                                 <a href={item.content} target="_blank" rel="noopener noreferrer">
@@ -375,9 +376,17 @@ export const Home = () => {
 
     // Función auxiliar para extraer el ID de YouTube
     function extractVideoId(url: string) {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
+        // YouTube
+        const youtubeRegex = /(youtu\.be\/|youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/))([^?&"'>]+)/;
+        const youtubeMatch = url.match(youtubeRegex);
+        if (youtubeMatch && youtubeMatch[3].length === 11) return youtubeMatch[3];
+        
+        // Vimeo
+        const vimeoRegex = /(vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/;
+        const vimeoMatch = url.match(vimeoRegex);
+        if (vimeoMatch) return vimeoMatch[2];
+        
+        return null;
     }
 
     return (
