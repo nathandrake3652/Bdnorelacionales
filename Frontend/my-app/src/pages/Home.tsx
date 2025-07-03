@@ -3,10 +3,22 @@ import { useUserProfile } from '../hooks/useUserProfile';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { usePublicaciones, usePublicacionesPorEtiqueta, useCrearPublicacion, useVotarPublicacion, useDarPremio } from '../hooks/usePublicaciones';
-import {useComentarios, useCrearComentario, useVotarComentario} from '../hooks/useComentarios';
+import {useComentarios, useCrearComentario} from '../hooks/useComentarios';
 import { useEtiquetas } from '../hooks/useTags';
 import '../styles/Home.css';
 import { usePremios } from '../hooks/usePremios';
+
+
+interface ComentarioProps {
+    comentario: any;
+    profundidad?: number;
+    user: any; // Pasar el objeto user como prop
+    setComentarioEditando: React.Dispatch<React.SetStateAction<{
+        publicacionId: string | null;
+        tipo: 'publicacion' | 'comentario';
+        content: string;
+    }>>;
+}
 
 export const Home = () => {
     const { token, setToken } = useAuth();
@@ -43,9 +55,10 @@ export const Home = () => {
 
     //hooks
     const { data: publicacionesNormales } = usePublicaciones(filtro);
+    const etiquetaLimpia = etiquetaSeleccionada?.replace(/^#/, '') || '';
     const { data: publicacionesFiltradas } = usePublicacionesPorEtiqueta(
-        busquedaActiva ? etiquetaSeleccionada || '' : '',
-        busquedaActiva ? filtro : 'Sin filtro'
+    busquedaActiva && etiquetaLimpia ? etiquetaLimpia : '',
+    busquedaActiva && etiquetaLimpia ? filtro : 'Sin filtro'
     );
 
     const publicaciones = busquedaActiva ? publicacionesFiltradas : publicacionesNormales;
@@ -112,30 +125,23 @@ export const Home = () => {
     };
 
     const handleVote = (publicacionId: string, newVoteValue: number) => {
-
-        if (!publicacionId || typeof publicacionId !== 'string') {
-            console.error('ID de publicación inválido:', publicacionId);
-            return;
-        }
-        console.log();
-
         if (user.type === 'anonimo') return;
         
         const currentVote = userVotes[publicacionId] || 0;
-        
         let scoreChange = 0;
         
+        
         if (currentVote === newVoteValue) {
-            scoreChange = -newVoteValue;
-        } 
-        
-        else if (currentVote === 0) {
+            
             scoreChange = newVoteValue;
+        } else if (currentVote === 0) {
+            
+            scoreChange = newVoteValue;
+        } else {
+            
+            scoreChange = newVoteValue * 2; // Anula el voto anterior (+1 o -1) 
         }
         
-        else {
-            scoreChange = newVoteValue; // (1 o -1)
-        }
         
         const newVote = currentVote === newVoteValue ? 0 : newVoteValue;
         setUserVotes(prev => ({
@@ -143,9 +149,11 @@ export const Home = () => {
             [publicacionId]: newVote
         }));
         
+        // Enviar voto al backend
+        console.log(publicacionId);
         votarPublicacion({
-            idVotador: user.id,    
-            score: scoreChange,  
+            idVotador: user.id,
+            score: scoreChange,
             idPublicacion: publicacionId
         });
     };
@@ -169,103 +177,66 @@ export const Home = () => {
     };
 
     //comentarios
-    const Comentario = ({ comentario, profundidad = 0 }: { comentario: any, profundidad?: number }) => {
-    const { mutate: votarComentario } = useVotarComentario();
-    const [mostrarRespuestas, setMostrarRespuestas] = useState(false);
-    const { data: respuestas } = useComentarios(comentario._id, 'comentario');
-    const [score, setScore] = useState<number>(comentario.votos?.reduce((sum: number, voto: any) => sum + voto.score, 0) || 0);
-    const [userVotes, setUserVotes] = useState<Record<string, number>>({});
+    const Comentario = ({ 
+        comentario, 
+        profundidad = 0, 
+        user, 
+        setComentarioEditando 
+    }: ComentarioProps) => {
+        const [mostrarRespuestas, setMostrarRespuestas] = useState(false);
+        const { data: respuestas } = useComentarios(comentario._id, 'comentario');
+        
+        return (
+            <div className="comentario" style={{ marginLeft: `${profundidad * 20}px` }}>
+                <div className="comentario-header">
+                    <span>{comentario.author.username}</span>
+                </div>
+                
+                <p className="comentario-content">{comentario.content}</p>
+                
+                
 
-    const handleVoteComentario = (comentarioId: string, newVoteValue: number) => {
-        if (user.type === 'anonimo') return;
-        
-        const currentVote = userVotes[comentarioId] || 0;
-        let scoreChange = 0;
-        
-        if (currentVote === newVoteValue) {
-            scoreChange = -newVoteValue;
-        } else if (currentVote === 0) {
-            scoreChange = newVoteValue;
-        } else {
-            scoreChange = newVoteValue;
-        }
-        
-        // Actualización optimista
-        const newVote = currentVote === newVoteValue ? 0 : newVoteValue;
-        setUserVotes(prev => ({ ...prev, [comentarioId]: newVote }));
-        setScore(prev => prev + scoreChange);
-        
-        // Enviar voto al backend
-        votarComentario({
-            idVotador: user.id,
-            score: scoreChange,
-            comentarioId: comentarioId.toString()
-        }, {
-            onSuccess: (nuevoScore) => {
-                // El backend solo retorna el número, así que lo usamos directamente
-                if (typeof nuevoScore === 'number') {
-                    setScore(nuevoScore);
-                }
-            },
-            onError: (error) => {
-                // Revertir en caso de error
-                setUserVotes(prev => ({ ...prev, [comentarioId]: currentVote }));
-                setScore(prev => prev - scoreChange);
-                console.error("Error al votar:", error);
-            }
-        });
-    };
-
-            return (
-                <div className="comentario" style={{ marginLeft: `${profundidad * 20}px` }}>
-                    <div className="comentario-header">
-                        <span>{comentario.author.username}</span>
-                        <div className="comentario-votos">
+                {mostrarRespuestas && respuestas?.map((respuesta: any) => (
+                    <Comentario 
+                        key={respuesta._id} 
+                        comentario={respuesta} 
+                        profundidad={profundidad + 1}
+                        user={user}
+                        setComentarioEditando={setComentarioEditando}
+                    />
+                ))}
+                {comentarioEditando.publicacionId === comentario._id && comentarioEditando.tipo === 'comentario' && (
+                    <div className="comentario-form">
+                        <textarea
+                            value={comentarioEditando.content}
+                            onChange={(e) => setComentarioEditando(prev => ({
+                                ...prev,
+                                content: e.target.value
+                            }))}
+                            placeholder="Escribe tu respuesta..."
+                        />
+                        <div className="comentario-form-actions">
                             <button 
-                                onClick={() => handleVoteComentario(comentario._id, 1)}
-                                className={userVotes[comentario._id] === 1 ? 'active' : ''}
-                                disabled={user.type === 'anonimo'}
-                            >↑</button>
-                            <span>{score}</span>
-                            <button 
-                                onClick={() => handleVoteComentario(comentario._id, -1)}
-                                className={userVotes[comentario._id] === -1 ? 'active' : ''}
-                                disabled={user.type === 'anonimo'}
-                            >↓</button>
-                        </div>
-                    </div>
-                    <p className="comentario-content">{comentario.content}</p>
-                    
-                    <div className="comentario-actions">
-                        {user.type !== 'anonimo' && (
+                                onClick={handleCrearComentario}
+                                disabled={!comentarioEditando.content.trim()}
+                            >
+                                Enviar
+                            </button>
                             <button 
                                 onClick={() => setComentarioEditando({
-                                    publicacionId: comentario._id,
-                                    tipo: 'comentario',
+                                    publicacionId: null,
+                                    tipo: 'publicacion',
                                     content: ''
                                 })}
                             >
-                                Responder
+                                Cancelar
                             </button>
-                        )}
-                        
-                        {respuestas?.length > 0 && (
-                            <button onClick={() => setMostrarRespuestas(!mostrarRespuestas)}>
-                                {mostrarRespuestas ? 'Ocultar respuestas' : `Ver respuestas (${respuestas.length})`}
-                            </button>
-                        )}
+                        </div>
                     </div>
-
-                    {mostrarRespuestas && respuestas?.map((respuesta: any) => (
-                        <Comentario 
-                            key={respuesta._id} 
-                            comentario={respuesta} 
-                            profundidad={profundidad + 1}
-                        />
-                    ))}
-                </div>
-            );
-        };
+                )}
+            </div>
+        );
+    };
     
         const handleCrearComentario = () => {
             if (!comentarioEditando.content.trim() || comentarioEditando.publicacionId === null) return;
@@ -290,7 +261,12 @@ export const Home = () => {
         return (
             <div className="comentarios-list">
                 {comentarios?.map((comentario: any) => (
-                    <Comentario key={comentario._id} comentario={comentario} />
+                    <Comentario 
+                        key={comentario._id} 
+                        comentario={comentario}
+                        user={user}
+                        setComentarioEditando={setComentarioEditando}
+                    />
                 ))}
             </div>
         );
@@ -483,7 +459,7 @@ export const Home = () => {
                             ↑
                             </button>
                             
-                            <span className="score">{publicacion.votos?.reduce((sum: any, voto: any) => sum + voto.score, 0) || 0}</span>
+                            <span className="score">{publicacion.score}</span>
                             
                             <button
                             

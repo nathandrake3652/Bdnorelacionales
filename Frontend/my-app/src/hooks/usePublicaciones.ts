@@ -26,7 +26,7 @@ export function useVotarPublicacion(){ //listo
     return useMutation({
         mutationFn: async (Rate:{idVotador: string, score: number, idPublicacion: string})  => {
             const respuesta = await api.patch('/publicacion/votar',Rate);
-            console.log(respuesta.data);
+            console.log(respuesta);
             return respuesta.data
         },
         onSuccess: () => {
@@ -81,6 +81,8 @@ export function usePublicacionesPorEtiqueta(etiqueta: string, filtro: string) {
           filtro
         }
       });
+      console.log("etiqueta: ",etiqueta);
+      console.log(filtro);
       return respuesta.data;
     }
   });

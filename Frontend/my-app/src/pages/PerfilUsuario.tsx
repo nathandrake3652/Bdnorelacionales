@@ -103,7 +103,7 @@ export const PerfilUsuario = () => {
                                     <h3>{publicacion.title}</h3>
                                     <p>{publicacion.content}</p>
                                     <div className="post-meta">
-                                        <span>Likes: {publicacion.votos?.reduce((sum: any, voto: any) => sum + voto.score, 0) || 0}</span>
+                                        <span>Likes: {publicacion.score}</span>
                                         <span>{new Date(publicacion.createdAt).toLocaleDateString()}</span>
                                         <button 
                                             className="delete-button"
