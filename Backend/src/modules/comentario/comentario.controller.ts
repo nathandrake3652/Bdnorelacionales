@@ -16,7 +16,7 @@ export class ComentarioController {
   @Get()
   async obtenerComentarios(
   @Query('publicacionId') publicacionId: string,
-  @Query('filtro') filtro: 'Publicacion' | 'Comentario',
+  @Query('filtro') filtro: 'publicacion' | 'comentario',
 ) {
   return this.comentarioService.obtenerComentariosPorFiltro(publicacionId, filtro);
 }

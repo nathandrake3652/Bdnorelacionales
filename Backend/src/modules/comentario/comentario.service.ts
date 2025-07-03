@@ -122,10 +122,10 @@ async obtenerComentariosPorUsuario(usuarioId: string) {
     return `Comentario con id ${id} eliminado correctamente`;
   }
 
-  async obtenerComentariosPorFiltro(id: string, filtro: 'Publicacion' | 'Comentario') {
-  if (filtro === 'Publicacion') {
+  async obtenerComentariosPorFiltro(id: string, filtro: 'publicacion' | 'comentario') {
+  if (filtro === 'publicacion') {
     return this.comentarioRepo.findRaizByPublicacion(id);
-  } else if (filtro === 'Comentario') {
+  } else if (filtro === 'comentario') {
     return this.comentarioRepo.findRespuestasByComentario(id);
   } else {
     throw new Error('Filtro no válido');
