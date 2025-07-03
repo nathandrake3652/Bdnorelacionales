@@ -202,7 +202,7 @@ async getPorEtiquetaYFiltro(etiqueta: string, filtro: string) {
         a.votos.reduce((acc, v) => acc + v.valor, 0)
       );
       break;
-    case 'Más recientes':
+    case 'recientes':
       ordenadas = publicaciones.sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
