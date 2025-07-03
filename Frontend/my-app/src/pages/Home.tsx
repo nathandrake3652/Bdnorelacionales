@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
-import { usePublicaciones, usePublicacionesPorEtiqueta, useCrearPublicacion, useVotarPublicacion, useDarPremio } from '../hooks/usePublicaciones';
+import { usePublicacionesPorEtiqueta, useCrearPublicacion, useVotarPublicacion, useDarPremio } from '../hooks/usePublicaciones';
 import {useComentarios, useCrearComentario} from '../hooks/useComentarios';
 import { useEtiquetas } from '../hooks/useTags';
 import '../styles/Home.css';
@@ -59,7 +59,6 @@ export const Home = () => {
     });
 
     //hooks
-    const { data: publicacionesNormales } = usePublicaciones(filtro);
     const etiquetaLimpia = etiquetaSeleccionada?.replace(/^#/, '') || '';
     const { data: publicacionesFiltradas } = usePublicacionesPorEtiqueta(
     busquedaActiva && etiquetaLimpia ? etiquetaLimpia : '',
@@ -122,7 +121,7 @@ export const Home = () => {
         formData.append('authorId', user.id);
         formData.append('tags', JSON.stringify(tagsArray));
 
-        
+
         imagenes.forEach((imagen, index) => {
             formData.append(`imagenes`, imagen);
         });
