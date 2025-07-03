@@ -44,7 +44,7 @@ export class publicacionRepository {
   ).exec();
 }
 async findByEtiqueta(etiqueta: string): Promise<Publicacion[]> {
-  return this.publicacionModel
+  return await this.publicacionModel
     .find({ tags: etiqueta })
     .populate('author.id', 'username') // opcional
     .lean() // si prefieres objetos planos

@@ -18,34 +18,50 @@ export class ComentarioService {
   ) {}
 
   async crearComentario(dto: CreateComentarioDto) {
-
-    const usuario = await this.userRepo.findById(dto.authorId);
+  const usuario = await this.userRepo.findById(dto.authorId);
   if (!usuario) {
     throw new Error('Usuario no encontrado');
   }
+
   const nuevoComentario = await this.comentarioRepo.create({
     content: dto.content,
     score: 0,
     author: {
       id: new Types.ObjectId(dto.authorId),
-      username: usuario.username, // Asegúrate de que el usuario tenga un campo username
+      username: usuario.username,
     },
     publicacion: {
       id: new Types.ObjectId(dto.publicacionId),
     },
     parentCommentId: dto.parentCommentId ? new Types.ObjectId(dto.parentCommentId) : undefined,
   });
-  const publicacion = await this.publi.findById(dto.publicacionId);
-  if (!publicacion) {
-    throw new Error('Publicación no encontrada');
+
+  // Determinar a quién notificar
+  if (dto.parentCommentId) {
+    // Es una respuesta a un comentario
+    const comentarioPadre = await this.comentarioRepo.findById(dto.parentCommentId);
+    if (comentarioPadre) {
+      await this.noti.crearNotificacion({
+        usuarioDestinoId: comentarioPadre.author.id.toString(),
+        origenUsuarioId: dto.authorId,
+        origenUsername: usuario.username,
+        tipo: 'respuesta',
+        comentarioId: dto.parentCommentId,
+      });
+    }
+  } else {
+    // Es un comentario a la publicación
+    const publicacion = await this.publi.findById(dto.publicacionId);
+    if (publicacion) {
+      await this.noti.crearNotificacion({
+        usuarioDestinoId: publicacion.author.id.toString(),
+        origenUsuarioId: dto.authorId,
+        origenUsername: usuario.username,
+        tipo: 'comentario',
+        postId: dto.publicacionId,
+      });
+    }
   }
-  await this.noti.crearNotificacion({
-    usuarioDestinoId: publicacion.author.id.toString(), // Asegúrate de que publicacion.author.id sea un ObjectId
-    origenUsuarioId: dto.authorId,
-    origenUsername: usuario.username,
-    tipo: 'comentario',
-    postId: dto.publicacionId,
-  })
 
   return nuevoComentario;
 }

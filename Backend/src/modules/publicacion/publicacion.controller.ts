@@ -30,6 +30,7 @@ export class PublicacionController {
   }
   @Get('filtrar/:tipo')
   async filtrarPorTipo(@Param('tipo') tipo: string) {
+    console.log('Tipo de filtro:', tipo);
   return this.publicacionService.getPublicacionesporfiltro(tipo);
 }
 @Get('usuario/:id')
@@ -41,6 +42,8 @@ async publicacionesPorEtiquetaYFiltro(
   @Query('etiqueta') etiqueta: string,
   @Query('filtro') filtro: string,
 ) {
+  console.log('Etiqueta:', etiqueta);
+  console.log('Filtro:', filtro);
   return this.publicacionService.getPorEtiquetaYFiltro(etiqueta, filtro);
 }
 
