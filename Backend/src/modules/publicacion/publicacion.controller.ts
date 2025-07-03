@@ -44,8 +44,6 @@ async publicacionesPorEtiquetaYFiltro(
   return this.publicacionService.getPorEtiquetaYFiltro(etiqueta, filtro);
 }
 
-
-
 @Patch('votar')
 async votarPublicacion(@Body() votarDto: VotarDto) {
   return this.publicacionService.votar(votarDto);

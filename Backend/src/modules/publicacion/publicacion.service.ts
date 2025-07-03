@@ -143,10 +143,10 @@ export class PublicacionService {
     });
   }
 
-  
+  const puntuacion = actualizada.votos.reduce((total, voto) => total + voto.valor, 0);
   return {
     mensaje: 'Voto procesado correctamente',
-    votos: actualizada.votos,
+    votos: puntuacion,
   };
 }
 async getPublicacionesporfiltro(tipo: string){
