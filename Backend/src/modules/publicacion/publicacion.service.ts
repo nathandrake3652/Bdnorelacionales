@@ -291,7 +291,7 @@ async crearConMultimedia(
       if (imagen?.path) {
         media.push({
           type: 'image',
-          content: imagen.path,
+          content: imagen.filename,
         });
       }
     }
