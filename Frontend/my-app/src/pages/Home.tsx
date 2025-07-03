@@ -323,7 +323,7 @@ export const Home = () => {
 
     const MediaDisplay = ({ media }: { media: { type: string; content: string }[] }) => {
         if (!media || media.length === 0) return null;
-
+        console.log();
         return (
             <div className="media-container">
                 {media.map((item, index) => {
@@ -354,7 +354,7 @@ export const Home = () => {
                                 </div>
                             );
                         }
-                        
+
                         return (
                             <div key={index} className="media-item">
                                 <a href={item.content} target="_blank" rel="noopener noreferrer">
