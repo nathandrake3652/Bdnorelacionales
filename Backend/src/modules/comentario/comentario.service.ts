@@ -49,31 +49,49 @@ export class ComentarioService {
 
   return nuevoComentario;
 }
-  async getPorPublicacion(publicacionId: string) {
-  const comentarios = await this.comentarioRepo.findByPublicacion(publicacionId) 
 
-  // Crear un mapa de comentarios por ID
-  const comentarioMap = new Map<string, any>();
-  const resultado: any[] = [];
+  async getPorPublicacion(publicacionId: string): Promise<ComentarioPlano[]> {
+  const comentarios = await this.comentarioRepo.findByPublicacion(publicacionId);
 
-  comentarios.forEach(c => {
-    (c as any).replies = []; 
-    comentarioMap.set(c._id.toString(), c);
+  const comentarioMap = new Map<string, ComentarioPlano>();
+  const resultado: ComentarioPlano[] = [];
+
+  comentarios.forEach((c: any) => {
+  const plano: ComentarioPlano = {
+    _id: c._id.toString(),
+    content: c.content,
+    score: (c.votos || []).reduce((acc, v) => acc + v.valor, 0),
+    author: {
+      id: typeof c.author?.id === 'object' ? c.author.id._id?.toString() : c.author?.id?.toString(),
+      username: c.author?.username,
+    },
+    publicacion: {
+      id: c.publicacion.id.toString(),
+    },
+    parentCommentId: c.parentCommentId ? c.parentCommentId.toString() : undefined,
+    replies: [],
+  };
+
+    comentarioMap.set(plano._id, plano);
   });
 
   comentarios.forEach(c => {
-    if (c.parentCommentId) {
-      const parent = comentarioMap.get(c.parentCommentId.toString());
-      if (parent) {
-        parent.replies.push(c);
-      }
+    const id = c._id.toString();
+    const parentId = c.parentCommentId?.toString();
+    const actual = comentarioMap.get(id);
+
+    if (parentId && comentarioMap.has(parentId)) {
+      comentarioMap.get(parentId)!.replies!.push(actual!);
     } else {
-      resultado.push(c);
+      resultado.push(actual!);
     }
   });
 
   return resultado;
 }
+
+
+
 async votarEnComentario(dto: VotarComentarioDto) {
   const { comentarioId, votadorId, score } = dto;
 
@@ -112,7 +130,15 @@ async votarEnComentario(dto: VotarComentarioDto) {
 
 async obtenerComentariosPorUsuario(usuarioId: string) {
   const comentarios = await this.comentarioRepo.findByUsuarioId(usuarioId);
-  return comentarios;
+  
+  return comentarios.map(c => ({
+    _id: c._id.toString(),
+    content: c.content,
+    author: c.author,
+    publicacion: c.publicacion,
+    parentCommentId: c.parentCommentId,
+    score: (c.votos || []).reduce((acc, v) => acc + v.valor, 0),
+  }));
 }
   async eliminarComentario(id: string) {
     const comentario = await this.comentarioRepo.deleteById(id);
@@ -134,4 +160,19 @@ async obtenerComentariosPorUsuario(usuarioId: string) {
 
 
 
+}
+
+export interface ComentarioPlano {
+  _id: string;
+  content: string;
+  score: number;
+  author: {
+    id: string;
+    username: string;
+  };
+  publicacion: {
+    id: string;
+  };
+  parentCommentId?: string;
+  replies?: ComentarioPlano[];
 }

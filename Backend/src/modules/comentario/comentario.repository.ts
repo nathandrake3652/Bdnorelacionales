@@ -17,7 +17,7 @@ export class ComentarioRepository {
     return comentario.save();
   }
 
-  async findByPublicacion(publicacionId: string): Promise<ComentarioPlano[]> {
+  async findByPublicacion(publicacionId: string) {
     return this.comentarioModel
       .find({ 'publicacion.id': publicacionId })
       .populate('author.id', 'username')
@@ -40,7 +40,7 @@ export class ComentarioRepository {
       )
       .exec();
   }
-  async findByUsuarioId(usuarioId: string): Promise<Comentario[]> {
+  async findByUsuarioId(usuarioId: string) {
   return this.comentarioModel
     .find({ 'author.id': usuarioId })
     .populate('publicacion.id', 'title') // opcional, si quieres el título de la publicación
@@ -72,17 +72,4 @@ async findRespuestasByComentario(commentId: string): Promise<Comentario[]> {
 
 }
 
-export interface ComentarioPlano {
-  _id: Types.ObjectId | string;
-  content: string;
-  score: number;
-  author: {
-    id: Types.ObjectId | string | { _id: string; username: string };
-    username: string;
-  };
-  publicacion: {
-    id: Types.ObjectId | string;
-  };
-  parentCommentId?: Types.ObjectId | string;
-  replies?: ComentarioPlano[];
-}
+
