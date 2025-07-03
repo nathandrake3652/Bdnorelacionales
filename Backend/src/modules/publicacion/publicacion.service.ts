@@ -187,16 +187,10 @@ async getPorEtiquetaYFiltro(etiqueta: string, filtro: string) {
   let ordenadas;
 
   switch (filtro) {
-    case 'Puntuación (Mayor a Menor)':
+    case 'populares':
       ordenadas = publicaciones.sort((a, b) =>
         b.votos.reduce((acc, v) => acc + v.valor, 0) -
         a.votos.reduce((acc, v) => acc + v.valor, 0)
-      );
-      break;
-    case 'Puntuación (Menor a Mayor)':
-      ordenadas = publicaciones.sort((a, b) =>
-        a.votos.reduce((acc, v) => acc + v.valor, 0) -
-        b.votos.reduce((acc, v) => acc + v.valor, 0)
       );
       break;
     case 'Más recientes':

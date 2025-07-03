@@ -110,6 +110,18 @@ async votarEnComentario(dto: VotarComentarioDto) {
   return comentario.score;
 }
 
+async obtenerComentariosPorUsuario(usuarioId: string) {
+  const comentarios = await this.comentarioRepo.findByUsuarioId(usuarioId);
+  return comentarios;
+}
+  async eliminarComentario(id: string) {
+    const comentario = await this.comentarioRepo.deleteById(id);
+    if (!comentario) {
+      throw new Error('Comentario no encontrado');
+    }
+    return `Comentario con id ${id} eliminado correctamente`;
+  }
+
 
 
 }

@@ -40,7 +40,7 @@ export class PublicacionController {
 async publicacionesDeUsuario(@Param('id') id: string) {
   return this.publicacionService.getPorUsuario(id);
 }
-@Get(':etiqueta/:filtro')
+@Get('filtroetiqueta/:etiqueta/:filtro')
 async publicacionesPorEtiquetaYFiltro(
   @Param('etiqueta') etiqueta: string,
   @Param('filtro') filtro: string,

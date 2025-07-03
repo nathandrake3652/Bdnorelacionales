@@ -22,4 +22,9 @@ votar( @Body() dto: VotarComentarioDto) {
   return this.comentarioService.votarEnComentario(dto);
 }
 
+@Get('usuario/:id')
+async comentariosDeUsuario(@Param('id') id: string) {
+  return this.comentarioService.obtenerComentariosPorUsuario(id);
+}
+
 }

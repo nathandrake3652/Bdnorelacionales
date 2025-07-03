@@ -40,6 +40,14 @@ export class ComentarioRepository {
       )
       .exec();
   }
+  async findByUsuarioId(usuarioId: string): Promise<Comentario[]> {
+  return this.comentarioModel
+    .find({ 'author.id': usuarioId })
+    .populate('publicacion.id', 'title') // opcional, si quieres el título de la publicación
+    .lean()
+    .exec();
+}
+
 }
 
 export interface ComentarioPlano {
