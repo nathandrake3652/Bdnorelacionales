@@ -8,12 +8,16 @@ interface PublicacionData{
     tags: string[];
 }
 
-export function useCrearPublicacion(){ //listo
+export function useCrearPublicacion() {
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async ({title, content,authorId, tags}:PublicacionData)  => {
-            const respuesta = await api.post('/publicacion',{title, content, authorId, tags});
-            return respuesta.data
+        mutationFn: async (formData: FormData) => {
+            const respuesta = await api.post('/publicacion', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return respuesta.data;
         },
         onSuccess: () => {
             clienteQuery.invalidateQueries({queryKey:['publicaciones']});

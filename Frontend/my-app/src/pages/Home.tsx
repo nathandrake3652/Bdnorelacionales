@@ -1,3 +1,5 @@
+import { useQueryClient } from '@tanstack/react-query';
+import api from '../api/axios';
 import React, { useState, useEffect } from 'react';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useNavigate } from "react-router-dom";
@@ -24,6 +26,7 @@ export const Home = () => {
     const { token, setToken } = useAuth();
     const navigate = useNavigate();
     const { data: user, isLoading: cargauser, isError } = useUserProfile();
+    const queryClient = useQueryClient();
     const [filtro, setFiltro] = useState("Sin filtro");
     
     //estados para premios
@@ -63,7 +66,7 @@ export const Home = () => {
     busquedaActiva && etiquetaLimpia ? filtro : 'Sin filtro'
     );
 
-    const publicaciones = busquedaActiva ? publicacionesFiltradas : publicacionesFiltradas;
+    const publicaciones = publicacionesFiltradas;
 
 
     const { data: etiquetas } = useEtiquetas();
@@ -105,7 +108,7 @@ export const Home = () => {
     };
 
 
-    const handleCrearPublicacion = () => {
+    const handleCrearPublicacion = async () => {
         if (!titulo || !contenido) {
             alert("Título y contenido son requeridos");
             return;
@@ -113,17 +116,46 @@ export const Home = () => {
 
         const tagsArray = tags.split(' ').filter(tag => tag.startsWith('#')).map(tag => tag.substring(1));
         
-        crearPublicacion({
-            title: titulo,
-            content: contenido,
-            authorId: user.id, 
-            tags: tagsArray
+        const formData = new FormData();
+        formData.append('title', titulo);
+        formData.append('content', contenido);
+        formData.append('authorId', user.id);
+        formData.append('tags', JSON.stringify(tagsArray));
+
+        
+        imagenes.forEach((imagen, index) => {
+            formData.append(`imagenes`, imagen);
         });
 
+        if (videoUrl) {
+        formData.append('videoUrl', videoUrl);
+        }
+
+        try {
+        const respuesta = await api.post('/publicacion', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        
+        // Limpiar el formulario
         setTitulo("");
         setContenido("");
         setTags("");
+        setImagenes([]);
+        setVideoUrl("");
         setMostrarModal(false);
+        
+        // Actualizar la lista de publicaciones
+        queryClient.invalidateQueries({queryKey:['publicaciones']});
+        
+        return respuesta.data;
+    } catch (error) {
+        console.error("Error al crear la publicación:", error);
+        alert("Error al crear la publicación");
+    }
+
+        
     };
 
     const handleVote = (publicacionId: string, newVoteValue: number) => {
@@ -290,7 +322,64 @@ export const Home = () => {
         setFiltro("Sin filtro");
     };
 
-    
+    const MediaDisplay = ({ media }: { media: { type: string; content: string }[] }) => {
+        if (!media || media.length === 0) return null;
+
+        return (
+            <div className="media-container">
+                {media.map((item, index) => {
+                    if (item.type === 'image') {
+                        return (
+                            <div key={index} className="media-item">
+                                <img 
+                                    src={item.content} 
+                                    alt={`Imagen ${index}`} 
+                                    style={{ maxWidth: '100%', maxHeight: '400px' }}
+                                />
+                            </div>
+                        );
+                    } else if (item.type === 'video') {
+                        // Extraer el ID del video de YouTube
+                        const videoId = extractVideoId(item.content);
+                        if (videoId) {
+                            return (
+                                <div key={index} className="media-item">
+                                    <iframe
+                                        width="560"
+                                        height="315"
+                                        src={`https://www.youtube.com/embed/${videoId}`}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    ></iframe>
+                                </div>
+                            );
+                        }
+                        return (
+                            <div key={index} className="media-item">
+                                <a href={item.content} target="_blank" rel="noopener noreferrer">
+                                    {item.content}
+                                </a>
+                            </div>
+                        );
+                    } else {
+                        return (
+                            <div key={index} className="media-item">
+                                <p>{item.content}</p>
+                            </div>
+                        );
+                    }
+                })}
+            </div>
+        );
+    };
+
+    // Función auxiliar para extraer el ID de YouTube
+    function extractVideoId(url: string) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
 
     return (
         <div className="home-container">
@@ -474,7 +563,8 @@ export const Home = () => {
       
                 
                     <h3 className="post-title">{publicacion.title}</h3>
-                    <p className="post-content">{publicacion.media.content}</p>
+                    <p className="post-content">{publicacion.content}</p>
+                    <MediaDisplay media={publicacion.media || []} />
 
                     
                     <div style={{ 
