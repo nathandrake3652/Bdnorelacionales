@@ -56,7 +56,7 @@ export function useEliminarComentario(){
     const clienteQuery = useQueryClient();
     return useMutation({
         mutationFn: async (comentarioId: string)  => {
-            const respuesta = await api.patch(`comentario/${comentarioId}`);
+            const respuesta = await api.delete(`comentario/${comentarioId}`);
             return respuesta.data
         },
         onSuccess: () => {

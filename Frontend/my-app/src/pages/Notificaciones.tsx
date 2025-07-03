@@ -8,7 +8,7 @@ export const Notificaciones = () => {
     const {token, setToken} = useAuth();
     const navigate = useNavigate();
     const { data: user, isLoading: cargauser, isError} = useUserProfile();
-    const {data: Notis, isLoading: cargaNotis} = useNotificaciones(user._id);
+    const {data: Notis, isLoading: cargaNotis} = useNotificaciones(user.id);
 
     if(!token)
     {

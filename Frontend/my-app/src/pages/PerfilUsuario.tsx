@@ -9,14 +9,14 @@ import '../styles/Perfil.css';
 export const PerfilUsuario = () => {
     
     const {token, setToken} = useAuth();
+    
     const navigate = useNavigate();
     const { data: user, isLoading: cargauser, isError} = useUserProfile();
     const [activeTab, setActiveTab] = useState<'publicaciones' | 'comentarios'>('publicaciones');
 
 
-    const { data: publicaciones, refetch: refetchPublicaciones } = usePublicacionesUsuario(user.id);
-    const { data: comentarios, refetch: refetchComentarios } = useComentariosUsuario(user.id);
-
+    const { data: publicaciones, refetch: refetchPublicaciones } = usePublicacionesUsuario(user?.id || '');
+    const { data: comentarios, refetch: refetchComentarios } = useComentariosUsuario(user?.id || '');
     const { mutate: eliminarPublicacion } = useEliminarPublicacion();
     const { mutate: eliminarComentario } = useEliminarComentario();
 
