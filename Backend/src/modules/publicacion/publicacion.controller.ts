@@ -28,10 +28,7 @@ export class PublicacionController {
   remove(@Param('id') id: string) {
     return this.publicacionService.remove(id);
   }
-  @Get('filtrar/:tipo')
-  async filtrarPorTipo(@Param('tipo') tipo: string) {
-  return this.publicacionService.getPublicacionesporfiltro(tipo);
-}
+  
 @Get('usuario/:id')
 async publicacionesDeUsuario(@Param('id') id: string) {
   return this.publicacionService.getPorUsuario(id);
@@ -41,7 +38,9 @@ async publicacionesPorEtiquetaYFiltro(
   @Query('etiqueta') etiqueta: string,
   @Query('filtro') filtro: string,
 ) {
-  return this.publicacionService.getPorEtiquetaYFiltro(etiqueta, filtro);
+  console.log('Etiqueta:', etiqueta);
+  console.log('Filtro:', filtro);
+  return this.publicacionService.getFiltro(etiqueta, filtro);
 }
 
 @Patch('votar')

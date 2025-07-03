@@ -154,7 +154,7 @@ async getPublicacionesporfiltro(tipo: string){
   let ordenadas;
 
   switch (tipo) {
-    case 'Puntuación (Mayor a Menor)':
+    case 'populares':
       ordenadas = publicaciones.sort((a, b) => 
         b.votos.reduce((acc, v) => acc + v.valor, 0) -
         a.votos.reduce((acc, v) => acc + v.valor, 0)
@@ -167,7 +167,7 @@ async getPublicacionesporfiltro(tipo: string){
         b.votos.reduce((acc, v) => acc + v.valor, 0)
       );
       break
-    case 'Más recientes':
+    case 'recientes':
       ordenadas = publicaciones.sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
@@ -192,17 +192,20 @@ async getPorUsuario(userId: string) {
 
 async getPorEtiquetaYFiltro(etiqueta: string, filtro: string) {
   const publicaciones = await this.publirepo.findByEtiqueta(etiqueta);
-
+  console.log('Etiqueta:', etiqueta);
+  console.log('Publicaciones encontradas:', publicaciones);
   let ordenadas;
 
   switch (filtro) {
     case 'populares':
+      console.log('Ordenando por populares');
       ordenadas = publicaciones.sort((a, b) =>
         b.votos.reduce((acc, v) => acc + v.valor, 0) -
         a.votos.reduce((acc, v) => acc + v.valor, 0)
       );
       break;
     case 'recientes':
+      console.log('Ordenando por recientes');
       ordenadas = publicaciones.sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
@@ -253,6 +256,19 @@ async asignarPremio(dto: AsignarPremioDto) {
   });
 
   return publicacion;
+}
+
+
+async getFiltro(etiqueta: string, filtro: string) {
+if(!etiqueta) {
+  return this.getPublicacionesporfiltro(filtro);
+}
+if( etiqueta && filtro) {
+  return this.getPorEtiquetaYFiltro(etiqueta, filtro);
+}
+
+
+
 }
 
 
