@@ -47,6 +47,28 @@ export class ComentarioRepository {
     .lean()
     .exec();
 }
+async deleteById(id: string): Promise<Comentario | null> {
+  return this.comentarioModel.findByIdAndDelete(id).exec();
+
+}
+async findRaizByPublicacion(publicacionId: string): Promise<Comentario[]> {
+  return this.comentarioModel
+    .find({
+      'publicacion.id': publicacionId,
+      parentCommentId: null,
+    })
+    .populate('author.id', 'username')
+    .lean()
+    .exec();
+}
+
+async findRespuestasByComentario(commentId: string): Promise<Comentario[]> {
+  return this.comentarioModel
+    .find({ parentCommentId: commentId })
+    .populate('author.id', 'username')
+    .lean()
+    .exec();
+}
 
 }
 

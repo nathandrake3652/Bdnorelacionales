@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ComentarioService } from './comentario.service';
 import { CreateComentarioDto } from './dto/create-comentario.dto';
 import { UpdateComentarioDto } from './dto/update-comentario.dto';
@@ -13,9 +13,12 @@ export class ComentarioController {
     return this.comentarioService.crearComentario(createComentarioDto);
   }
 
-  @Get('publicacion/:id')
-async comentariosDePublicacion(@Param('id') id: string) {
-  return this.comentarioService.getPorPublicacion(id);
+  @Get()
+  async obtenerComentarios(
+  @Query('publicacionId') publicacionId: string,
+  @Query('filtro') filtro: 'Publicacion' | 'Comentario',
+) {
+  return this.comentarioService.obtenerComentariosPorFiltro(publicacionId, filtro);
 }
 @Patch('votar')
 votar( @Body() dto: VotarComentarioDto) {
@@ -25,6 +28,10 @@ votar( @Body() dto: VotarComentarioDto) {
 @Get('usuario/:id')
 async comentariosDeUsuario(@Param('id') id: string) {
   return this.comentarioService.obtenerComentariosPorUsuario(id);
+}
+@Delete(':id')
+async eliminarComentario(@Param('id') id: string) {
+  return this.comentarioService.eliminarComentario(id);
 }
 
 }
