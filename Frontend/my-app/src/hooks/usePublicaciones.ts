@@ -26,6 +26,7 @@ export function useVotarPublicacion(){ //listo
     return useMutation({
         mutationFn: async (Rate:{idVotador: string, score: number, idPublicacion: string})  => {
             const respuesta = await api.patch('/publicacion/votar',Rate);
+            console.log(respuesta.data);
             return respuesta.data
         },
         onSuccess: () => {

@@ -27,11 +27,12 @@ export function useCrearComentario(){
 export function useVotarComentario() {
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (voteData: {userId: string, score: number, comentarioId: string}) => {
+        mutationFn: async (voteData: {comentarioId: string, idVotador: string, score: number}) => {
             const respuesta = await api.patch('comentario/votar', voteData);
+            console.log(respuesta.data);
             return respuesta.data;
         },
-        onSuccess: () => {
+        onSuccess: (nuevoScore, variables) => {
             clienteQuery.invalidateQueries({queryKey: ['comentarios']});
         }
     });
@@ -47,6 +48,7 @@ export function useComentarios(publicacionId: string, filtro: string) {
           filtro
         }
       });
+            console.log("comentario: ",respuesta.data);
             return respuesta.data;
         }
     });

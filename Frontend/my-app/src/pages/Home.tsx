@@ -97,7 +97,7 @@ export const Home = () => {
         }
 
         const tagsArray = tags.split(' ').filter(tag => tag.startsWith('#')).map(tag => tag.substring(1));
-        console.log(user.id);
+        
         crearPublicacion({
             title: titulo,
             content: contenido,
@@ -112,9 +112,17 @@ export const Home = () => {
     };
 
     const handleVote = (publicacionId: string, newVoteValue: number) => {
+
+        if (!publicacionId || typeof publicacionId !== 'string') {
+            console.error('ID de publicación inválido:', publicacionId);
+            return;
+        }
+        console.log();
+
         if (user.type === 'anonimo') return;
         
         const currentVote = userVotes[publicacionId] || 0;
+        
         let scoreChange = 0;
         
         if (currentVote === newVoteValue) {
@@ -162,39 +170,51 @@ export const Home = () => {
 
     //comentarios
     const Comentario = ({ comentario, profundidad = 0 }: { comentario: any, profundidad?: number }) => {
-        const { mutate: votarComentario } = useVotarComentario();
-        const [mostrarRespuestas, setMostrarRespuestas] = useState(false);
-        const { data: respuestas } = useComentarios(comentario._id, 'comentario');
-    
-        // Estado para manejar los votos
-        const [userVotes, setUserVotes] = useState<Record<string, number>>({});
+    const { mutate: votarComentario } = useVotarComentario();
+    const [mostrarRespuestas, setMostrarRespuestas] = useState(false);
+    const { data: respuestas } = useComentarios(comentario._id, 'comentario');
+    const [score, setScore] = useState<number>(comentario.votos?.reduce((sum: number, voto: any) => sum + voto.score, 0) || 0);
+    const [userVotes, setUserVotes] = useState<Record<string, number>>({});
 
-            const handleVoteComentario = (comentarioId: string, newVoteValue: number) => {
-                    if (user.type === 'anonimo') return;
-                    
-                    const currentVote = userVotes[comentarioId] || 0;
-                    let scoreChange = 0;
-                    
-                    if (currentVote === newVoteValue) {
-                        scoreChange = -newVoteValue;
-                    } else if (currentVote === 0) {
-                        scoreChange = newVoteValue;
-                    } else {
-                        scoreChange = newVoteValue; // (1 o -1)
-                    }
-                    
-                    const newVote = currentVote === newVoteValue ? 0 : newVoteValue;
-                    setUserVotes(prev => ({
-                        ...prev,
-                        [comentarioId]: newVote
-                    }));
-                    
-                    votarComentario({
-                        userId: user.id,    
-                        score: scoreChange,  
-                        comentarioId: comentarioId
-                    });
-                };
+    const handleVoteComentario = (comentarioId: string, newVoteValue: number) => {
+        if (user.type === 'anonimo') return;
+        
+        const currentVote = userVotes[comentarioId] || 0;
+        let scoreChange = 0;
+        
+        if (currentVote === newVoteValue) {
+            scoreChange = -newVoteValue;
+        } else if (currentVote === 0) {
+            scoreChange = newVoteValue;
+        } else {
+            scoreChange = newVoteValue;
+        }
+        
+        // Actualización optimista
+        const newVote = currentVote === newVoteValue ? 0 : newVoteValue;
+        setUserVotes(prev => ({ ...prev, [comentarioId]: newVote }));
+        setScore(prev => prev + scoreChange);
+        
+        // Enviar voto al backend
+        votarComentario({
+            idVotador: user.id,
+            score: scoreChange,
+            comentarioId: comentarioId.toString()
+        }, {
+            onSuccess: (nuevoScore) => {
+                // El backend solo retorna el número, así que lo usamos directamente
+                if (typeof nuevoScore === 'number') {
+                    setScore(nuevoScore);
+                }
+            },
+            onError: (error) => {
+                // Revertir en caso de error
+                setUserVotes(prev => ({ ...prev, [comentarioId]: currentVote }));
+                setScore(prev => prev - scoreChange);
+                console.error("Error al votar:", error);
+            }
+        });
+    };
 
             return (
                 <div className="comentario" style={{ marginLeft: `${profundidad * 20}px` }}>
@@ -206,7 +226,7 @@ export const Home = () => {
                                 className={userVotes[comentario._id] === 1 ? 'active' : ''}
                                 disabled={user.type === 'anonimo'}
                             >↑</button>
-                            <span>{comentario.votos?.reduce((sum: any, voto: any) => sum + voto.score, 0) || 0}</span>
+                            <span>{score}</span>
                             <button 
                                 onClick={() => handleVoteComentario(comentario._id, -1)}
                                 className={userVotes[comentario._id] === -1 ? 'active' : ''}
@@ -249,7 +269,7 @@ export const Home = () => {
     
         const handleCrearComentario = () => {
             if (!comentarioEditando.content.trim() || comentarioEditando.publicacionId === null) return;
-            console.log(comentarioEditando.publicacionId);
+            
             crearComentario({
                 content: comentarioEditando.content,
                 authorId: user.id,
@@ -444,7 +464,7 @@ export const Home = () => {
       
                 
                     <h3 className="post-title">{publicacion.title}</h3>
-                    <p className="post-content">{publicacion.media}{console.log(publicacion)}</p>
+                    <p className="post-content">{publicacion.media}</p>
 
                     
                     <div style={{ 
