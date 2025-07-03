@@ -1,16 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile, UploadedFiles } from '@nestjs/common';
 import { PublicacionService } from './publicacion.service';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
 import { VotarDto } from './dto/votar.dto';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('publicacion')
 export class PublicacionController {
   constructor(private readonly publicacionService: PublicacionService) {}
 
   @Post()
-  create(@Body() createPublicacionDto: CreatePublicacionDto) {
-    return this.publicacionService.create(createPublicacionDto);
+  @UseInterceptors(
+    FileFieldsInterceptor([
+    {name: 'imagenes',maxCount: 5},
+    {name: 'videoUrl',maxCount: 1},
+  ])
+)
+ async  crearPublicacion(
+  @UploadedFiles() files: { imagenes?: Express.Multer.File[], videoUrl?: Express.Multer.File[] },
+  
+  @Body() body:any) {
+
+    return this.publicacionService.crearConMultimedia(body, files);
   }
 
   @Get()

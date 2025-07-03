@@ -261,9 +261,11 @@ async asignarPremio(dto: AsignarPremioDto) {
 
 async getFiltro(etiqueta: string, filtro: string) {
 if(!etiqueta) {
+  console.log('No se proporcionó etiqueta, usando filtro:', filtro);
   return this.getPublicacionesporfiltro(filtro);
 }
 if( etiqueta && filtro) {
+  console.log('Etiqueta y filtro proporcionados:', etiqueta, filtro);
   return this.getPorEtiquetaYFiltro(etiqueta, filtro);
 }
 
@@ -271,5 +273,64 @@ if( etiqueta && filtro) {
 
 }
 
+
+
+async crearConMultimedia(body: any, files: { imagenes?: Express.Multer.File[]; videoUrl?: Express.Multer.File[] }) {
+  const user = await this.userRepo.findById(body.authorId);
+  if (!user) throw new Error('Usuario no encontrado');
+
+  // Parsear campos complejos desde FormData
+  const tags = typeof body.tags === 'string' ? JSON.parse(body.tags) : body.tags;
+
+  const media: { type: string; content: string }[] = [];
+
+  if (files.imagenes) {
+    for (const imagen of files.imagenes) {
+      media.push({
+        type: 'image',
+        content: imagen.path, // o una URL pública si usas hosting
+      });
+    }
+  }
+
+  if (files.videoUrl && files.videoUrl[0]) {
+    media.push({
+      type: 'video',
+      content: files.videoUrl[0].path,
+    });
+  }
+
+  // Si el usuario quiere añadir texto también
+  if (body.content && body.content.trim() !== '') {
+    media.push({
+      type: 'text',
+      content: body.content.trim(),
+    });
+  }
+
+  // Crear etiquetas si no existen
+  for (const nombreTag of tags) {
+    const existente = await this.etiquetaService.FindByNombre(nombreTag);
+    if (!existente) {
+      await this.etiquetaService.create({ nombre: nombreTag });
+    }
+  }
+
+  // Crear la publicación
+  await this.publirepo.create({
+    title: body.title,
+    media,
+    author: {
+      id: user._id as Types.ObjectId,
+      username: user.username,
+    },
+    tags,
+    createdAt: new Date(),
+    votos: [],
+    premios: [],
+  });
+
+  return 'Publicación creada correctamente';
+}
 
 }
