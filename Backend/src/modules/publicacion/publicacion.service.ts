@@ -275,40 +275,45 @@ if( etiqueta && filtro) {
 
 
 
-async crearConMultimedia(body: any, files: { imagenes?: Express.Multer.File[]; videoUrl?: Express.Multer.File[] }) {
+async crearConMultimedia(
+  body: any,
+  files: { imagenes?: Express.Multer.File[]; videoUrl?: Express.Multer.File[] }
+) {
   const user = await this.userRepo.findById(body.authorId);
   if (!user) throw new Error('Usuario no encontrado');
 
-  // Parsear campos complejos desde FormData
   const tags = typeof body.tags === 'string' ? JSON.parse(body.tags) : body.tags;
 
   const media: { type: string; content: string }[] = [];
 
-  if (files.imagenes) {
+  if (files.imagenes?.length) {
     for (const imagen of files.imagenes) {
-      media.push({
-        type: 'image',
-        content: imagen.path, // o una URL pública si usas hosting
-      });
+      if (imagen?.path) {
+        media.push({
+          type: 'image',
+          content: imagen.path,
+        });
+      }
     }
   }
 
-  if (files.videoUrl && files.videoUrl[0]) {
+  if (files.videoUrl?.[0]?.path) {
     media.push({
       type: 'video',
       content: files.videoUrl[0].path,
     });
   }
 
-  // Si el usuario quiere añadir texto también
-  if (body.content && body.content.trim() !== '') {
+  if (body.content && body.content.trim()) {
     media.push({
       type: 'text',
       content: body.content.trim(),
     });
   }
 
-  // Crear etiquetas si no existen
+  // Validar que media no contenga datos inválidos
+  const mediaLimpia = media.filter(m => m.type && m.content);
+
   for (const nombreTag of tags) {
     const existente = await this.etiquetaService.FindByNombre(nombreTag);
     if (!existente) {
@@ -316,10 +321,9 @@ async crearConMultimedia(body: any, files: { imagenes?: Express.Multer.File[]; v
     }
   }
 
-  // Crear la publicación
   await this.publirepo.create({
     title: body.title,
-    media,
+    media: mediaLimpia,
     author: {
       id: user._id as Types.ObjectId,
       username: user.username,
