@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { PublicacionService } from './publicacion.service';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
@@ -23,10 +23,6 @@ export class PublicacionController {
     return this.publicacionService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePublicacionDto: UpdatePublicacionDto) {
-    return this.publicacionService.update(+id, updatePublicacionDto);
-  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
@@ -40,13 +36,16 @@ export class PublicacionController {
 async publicacionesDeUsuario(@Param('id') id: string) {
   return this.publicacionService.getPorUsuario(id);
 }
-@Get('filtroetiqueta/:etiqueta/:filtro')
+@Get('filtroetiqueta')
 async publicacionesPorEtiquetaYFiltro(
-  @Param('etiqueta') etiqueta: string,
-  @Param('filtro') filtro: 'populares' | 'Más recientes' | 'Sin filtro',
+  @Query('etiqueta') etiqueta: string,
+  @Query('filtro') filtro: string,
 ) {
   return this.publicacionService.getPorEtiquetaYFiltro(etiqueta, filtro);
 }
+
+
+
 @Patch('votar')
 async votarPublicacion(@Body() votarDto: VotarDto) {
   return this.publicacionService.votar(votarDto);
