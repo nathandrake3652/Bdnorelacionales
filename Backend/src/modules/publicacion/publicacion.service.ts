@@ -72,7 +72,16 @@ export class PublicacionService {
 
   async findOne(id: string) {
    const publicacion = await this.publirepo.findById(id.toString());
-    return publicacion;
+    return {
+      _id: publicacion._id as Types.ObjectId,
+      title: publicacion.title,
+      media: publicacion.media,
+      author: publicacion.author,
+      tags: publicacion.tags,
+      createdAt: publicacion.createdAt,
+      premios: publicacion.premios,
+      score: publicacion.votos.reduce((total, voto) => total + voto.valor, 0),
+    };
   }
 
   update(id: number, updatePublicacionDto: UpdatePublicacionDto) {
