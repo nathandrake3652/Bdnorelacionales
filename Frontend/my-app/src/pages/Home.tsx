@@ -12,7 +12,6 @@ export const Home = () => {
     const { token, setToken } = useAuth();
     const navigate = useNavigate();
     const { data: user, isLoading: cargauser, isError } = useUserProfile();
-    console.log(user);
     const [filtro, setFiltro] = useState("Sin filtro");
 
     //estados para premios
@@ -102,7 +101,7 @@ export const Home = () => {
         crearPublicacion({
             title: titulo,
             content: contenido,
-            authorId: user._id, 
+            authorId: user.id, 
             tags: tagsArray
         });
 
@@ -137,9 +136,9 @@ export const Home = () => {
         }));
         
         votarPublicacion({
-            userId: user._id,    
+            idVotador: user.id,    
             score: scoreChange,  
-            publicacionId: publicacionId
+            idPublicacion: publicacionId
         });
     };
 
@@ -147,7 +146,7 @@ export const Home = () => {
         if (!publicacionSeleccionada || !user) return;
         
         darPremio({
-            userId: user._id,      
+            userId: user.id,      
             premioId: idPremio,    
             publicacionId: publicacionSeleccionada
         });
@@ -191,7 +190,7 @@ export const Home = () => {
                     }));
                     
                     votarComentario({
-                        userId: user._id,    
+                        userId: user.id,    
                         score: scoreChange,  
                         comentarioId: comentarioId
                     });
@@ -239,7 +238,7 @@ export const Home = () => {
 
                     {mostrarRespuestas && respuestas?.map((respuesta: any) => (
                         <Comentario 
-                            key={respuesta.id} 
+                            key={respuesta._id} 
                             comentario={respuesta} 
                             profundidad={profundidad + 1}
                         />
@@ -250,10 +249,10 @@ export const Home = () => {
     
         const handleCrearComentario = () => {
             if (!comentarioEditando.content.trim() || comentarioEditando.publicacionId === null) return;
-            
+            console.log(comentarioEditando.publicacionId);
             crearComentario({
                 content: comentarioEditando.content,
-                authorId: user._id,
+                authorId: user.id,
                 publicacionId: comentarioEditando.publicacionId,
                 tipo: comentarioEditando.tipo
             });
@@ -445,8 +444,8 @@ export const Home = () => {
       
                 
                     <h3 className="post-title">{publicacion.title}</h3>
-                    <p className="post-content">{publicacion.content}</p>
-      
+                    <p className="post-content">{publicacion.media}{console.log(publicacion)}</p>
+
                     
                     <div style={{ 
                         display: 'flex', 
@@ -467,6 +466,7 @@ export const Home = () => {
                             <span className="score">{publicacion.votos?.reduce((sum: any, voto: any) => sum + voto.score, 0) || 0}</span>
                             
                             <button
+                            
                             onClick={() => handleVote(publicacion._id, -1)}
                             className={`vote-btn downvote ${userVotes[publicacion._id] === -1 ? 'active' : ''}`}
                             >
@@ -572,7 +572,7 @@ export const Home = () => {
                     const yaPremiada = publicaciones
                         ?.find((p: any) => p._id === publicacionSeleccionada)
                         ?.premios
-                        ?.some((p: any) => p.userId === user?._id && p.premioId === premio._id);
+                        ?.some((p: any) => p.userId === user?.id && p.premioId === premio._id);
                     
                         return (
                             <button
