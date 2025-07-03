@@ -41,7 +41,12 @@ export function useComentarios(publicacionId: string, filtro: string) {
     return useQuery({
         queryKey: ['comentarios', publicacionId, filtro],
         queryFn: async () => {
-            const respuesta = await api.get(`comentario/${filtro}/${publicacionId}`);
+            const respuesta = await api.get(`/comentario`, { 
+        params: {  
+          publicacionId,
+          filtro
+        }
+      });
             return respuesta.data;
         }
     });
@@ -64,7 +69,7 @@ export function useComentariosUsuario(userId: string) {
     return useQuery({
         queryKey: ['comentariosUsuario', userId],
         queryFn: async () => {
-            const respuesta = await api.get(`comentario/user/${userId}`);
+            const respuesta = await api.get(`comentario/usuario/${userId}`);
             return respuesta.data;
         }
     });

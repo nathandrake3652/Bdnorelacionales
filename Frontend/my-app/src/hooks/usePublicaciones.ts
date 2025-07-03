@@ -24,7 +24,7 @@ export function useCrearPublicacion(){ //listo
 export function useVotarPublicacion(){ //listo
     const clienteQuery = useQueryClient();
     return useMutation({
-        mutationFn: async (Rate:{userId: string, score: number, publicacionId: string})  => {
+        mutationFn: async (Rate:{idVotador: string, score: number, idPublicacion: string})  => {
             const respuesta = await api.patch('/publicacion/votar',Rate);
             return respuesta.data
         },
@@ -89,7 +89,7 @@ export function useEliminarPublicacion(){
     const clienteQuery = useQueryClient();
     return useMutation({
         mutationFn: async (idPublicacion: string)  => {
-            const respuesta = await api.delete(`/publicacion/${idPublicacion}`);
+            const respuesta = await api.delete(`publicacion/${idPublicacion}`);
             return respuesta.data
         },
         onSuccess: () => {

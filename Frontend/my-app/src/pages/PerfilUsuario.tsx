@@ -14,8 +14,8 @@ export const PerfilUsuario = () => {
     const [activeTab, setActiveTab] = useState<'publicaciones' | 'comentarios'>('publicaciones');
 
 
-    const { data: publicaciones, refetch: refetchPublicaciones } = usePublicacionesUsuario(user._id);
-    const { data: comentarios, refetch: refetchComentarios } = useComentariosUsuario(user._id);
+    const { data: publicaciones, refetch: refetchPublicaciones } = usePublicacionesUsuario(user.id);
+    const { data: comentarios, refetch: refetchComentarios } = useComentariosUsuario(user.id);
 
     const { mutate: eliminarPublicacion } = useEliminarPublicacion();
     const { mutate: eliminarComentario } = useEliminarComentario();
@@ -40,9 +40,9 @@ export const PerfilUsuario = () => {
         navigate('/Login');
     }
 
-    const handleEliminarPublicacion = (_id: string) => {
+    const handleEliminarPublicacion = (id: string) => {
         if (window.confirm('¿Estás seguro de eliminar esta publicación?')) {
-            eliminarPublicacion(_id, {
+            eliminarPublicacion(id, {
                 onSuccess: () => {
                     refetchPublicaciones();
                 }
@@ -50,9 +50,9 @@ export const PerfilUsuario = () => {
         }
     };
 
-    const handleEliminarComentario = (_id: string) => {
+    const handleEliminarComentario = (id: string) => {
         if (window.confirm('¿Estás seguro de eliminar este comentario?')) {
-            eliminarComentario(_id, {
+            eliminarComentario(id, {
                 onSuccess: () => {
                     refetchComentarios();
                 }
