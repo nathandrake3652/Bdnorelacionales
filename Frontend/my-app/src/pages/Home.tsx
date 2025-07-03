@@ -22,6 +22,15 @@ interface ComentarioProps {
     }>>;
 }
 
+interface MediaItem {
+  type: 'image' | 'video' | 'gif' | 'link' | 'text';
+  content: string;
+}
+
+interface MediaDisplayProps {
+  media: MediaItem[];
+}
+
 export const Home = () => {
     const { token, setToken } = useAuth();
     const navigate = useNavigate();
@@ -321,73 +330,42 @@ export const Home = () => {
         setFiltro("Sin filtro");
     };
 
-    const MediaDisplay = ({ media }: { media: { type: string; content: string }[] }) => {
-        if (!media || media.length === 0) return null;
-        console.log();
+    const MediaDisplay = ({ media }:MediaDisplayProps) => {
+        if (!media?.length) return null;
+
         return (
             <div className="media-container">
-                {media.map((item, index) => {
-                    if (item.type === 'image') {
-                        return (
-                            <div key={index} className="media-item">
-                                <img 
-                                    src={item.content} 
-                                    alt={`Imagen ${index}`} 
-                                    style={{ maxWidth: '100%', maxHeight: '400px' }}
-                                />
-                            </div>
-                        );
-                    } else if (item.type === 'video') {
-                        // Extraer el ID del video de YouTube
-                        const videoId = extractVideoId(item.content);
-                        if (videoId) {
-                            return (
-                                <div key={index} className="media-item">
-                                    <iframe
-                                        width="560"
-                                        height="315"
-                                        src={`https://www.youtube.com/embed/${videoId}`}
-                                        frameBorder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                    ></iframe>
-                                </div>
-                            );
-                        }
-
-                        return (
-                            <div key={index} className="media-item">
-                                <a href={item.content} target="_blank" rel="noopener noreferrer">
-                                    {item.content}
-                                </a>
-                            </div>
-                        );
-                    } else {
-                        return (
-                            <div key={index} className="media-item">
-                                <p>{item.content}</p>
-                            </div>
-                        );
-                    }
-                })}
+            {media.map((item, index) => (
+                item.type === 'image' && (
+                <div key={index} className="media-item">
+                    <img
+                    src={`http://localhost:3000/uploads/${item.content}`} // Usa la URL completa que viene del backend
+                    alt={`Imagen ${index}`}
+                    onError={(e) => {
+                        e.currentTarget.alt = 'Imagen no disponible';
+                    }}
+                    />
+                </div>
+                )
+            ))}
             </div>
         );
-    };
+        };
 
-    // Función auxiliar para extraer el ID de YouTube
-    function extractVideoId(url: string) {
-        // YouTube
-        const youtubeRegex = /(youtu\.be\/|youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/))([^?&"'>]+)/;
-        const youtubeMatch = url.match(youtubeRegex);
-        if (youtubeMatch && youtubeMatch[3].length === 11) return youtubeMatch[3];
-        
-        // Vimeo
-        const vimeoRegex = /(vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/;
-        const vimeoMatch = url.match(vimeoRegex);
-        if (vimeoMatch) return vimeoMatch[2];
-        
-        return null;
-    }
+            // Función auxiliar para extraer el ID de YouTube
+            function extractVideoId(url: string) {
+                // YouTube
+                const youtubeRegex = /(youtu\.be\/|youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/))([^?&"'>]+)/;
+                const youtubeMatch = url.match(youtubeRegex);
+                if (youtubeMatch && youtubeMatch[3].length === 11) return youtubeMatch[3];
+                
+                // Vimeo
+                const vimeoRegex = /(vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/;
+                const vimeoMatch = url.match(vimeoRegex);
+                if (vimeoMatch) return vimeoMatch[2];
+                
+                return null;
+            }
 
     return (
         <div className="home-container">
